@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.cnctor.hls.domain.repository.storeota.StoreOtaRepository">
+	
+	<resultMap id="storeOtaResultMap" type="StoreOta">
+	  
+	  <id property="storeId" column="store_id" />
+	  <id property="otaId" column="ota_id" />
+	   
+		<result property="url" column="url" />
+		<result property="customStoreId" column="custom_store_id" />
+		<result property="username" column="username" />
+		<result property="password" column="password" />
+		<result property="expiredDate" column="expired_date" />
+		<result property="note" column="note" />
+	</resultMap>
+	
+  
+  <insert id="upsert" parameterType="StoreOta">
+    
+    INSERT INTO 
+    
+    public.store_ota
+    
+    (
+	    store_id, 
+	    ota_id, 
+	    url, 
+	    username, 
+	    password, 
+	    expired_date, 
+	    note,
+	    custom_store_id
+    )
+    
+    VALUES 
+    
+    (
+      #{storeId},
+      #{otaId},
+      #{url}, 
+      #{username},
+      #{password},
+      #{expiredDate},
+      #{note},
+      #{customStoreId}
+    )
+    
+    ON CONFLICT (store_id, ota_id)
+    DO UPDATE SET
+    
+      url=#{url}, 
+      username=#{username}, 
+      password=#{password}, 
+      expired_date=#{expiredDate},
+      note=#{note} ,
+      custom_store_id=#{customStoreId}
+    
+  </insert>
+  
+  
+  <delete id="delete">
+    DELETE 
+      FROM public.store_ota
+    
+    WHERE 
+      store_id = #{storeId} 
+      AND ota_id IN 
+        <foreach item="item" index="index" collection="otas"
+             open="(" separator="," close=")">
+          #{item.otaId}
+        </foreach>
+  </delete>
+  
+  
+  <select id="upsertProcedure" parameterType="StoreOta" statementType="CALLABLE" resultType="String">
+    {call upsertStoreOTA(#{storeId}, #{otaId}, #{url}, #{username}, #{password}, #{note}, #{customStoreId})}
+  </select>
+  
+  <select id="findOne" resultMap="storeOtaResultMap">
+    SELECT 
+      *
+    FROM 
+      public.store_ota
+    
+    WHERE 
+      store_id = #{storeId} AND
+      ota_id = #{otaId}
+  </select>
+  
+</mapper>

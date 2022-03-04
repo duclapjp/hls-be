@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.cnctor.hls.domain.repository.taskattach.TaskAttachRepository">
+	<resultMap id="taskAttachResultMap" type="TaskAttach">
+	
+		<id property="taskAttachId" column="task_attach_id" />
+
+		<result property="taskId" column="task_id" />
+		<result property="attachName" column="attach_name" />
+		<result property="attachUrl" column="attach_url" />
+		<result property="createdDate" column="created_date" />
+		<result property="parentAttachId" column="parent_attach_id" />
+		<result property="size" column="file_size" />
+		
+	</resultMap>
+	
+	<insert id="insert" parameterType="TaskAttach">
+
+    <selectKey keyProperty="taskAttachId" resultType="long"
+      order="BEFORE">
+      SELECT nextval('public."SEQ_TASK_ATTACH"') AS taskAttachId
+    </selectKey>
+
+    INSERT INTO
+      public.task_attach
+	    
+	    (
+		    task_attach_id, 
+		    task_id, 
+		    attach_name, 
+		    attach_url, 
+		    created_date,
+		    parent_attach_id,
+		    file_size
+	    )
+	    
+	  VALUES
+	    (
+		    #{taskAttachId},
+		    #{taskId},
+		    #{attachName},
+		    #{attachUrl},
+		    #{createdDate},
+		    #{parentAttachId},
+		    #{size}
+      )
+  </insert>
+	
+	<update id="update" parameterType="TaskAttach">
+    UPDATE
+      public.task_attach
+
+    SET
+	    task_id=#{taskId}, 
+	    attach_name=#{attachName}, 
+	    attach_url=#{attachUrl}, 
+	    created_date=#{createdDate},
+	    parent_attach_id=#{parentAttachId},
+	    file_size=#{size}
+	    
+    WHERE
+      task_attach_id = #{taskAttachId}
+  </update>
+  
+  <update id="updateTaskId" parameterType="TaskAttach">
+    UPDATE
+      public.task_attach
+
+    SET
+      task_id=#{taskId}
+    WHERE
+      task_attach_id = #{taskAttachId}
+      AND task_id is null
+  </update>
+	
+	<select id="findOne" parameterType="Long"
+    resultMap="taskAttachResultMap">
+    SELECT
+	    
+	    task_attach_id, 
+	    task_id, 
+	    attach_name, 
+	    attach_url, 
+	    created_date,
+	    parent_attach_id,
+	    file_size
+
+    FROM
+      public.task_attach
+    WHERE
+      task_attach_id = #{taskAttachId};
+  </select>
+  
+  <delete id="delete" parameterType="TaskAttach">
+    DELETE FROM
+      public.task_attach
+    WHERE 
+      task_attach_id = #{taskAttachId}
+  </delete>
+    
+  <select id="getByParentId" parameterType="Long"
+    resultMap="taskAttachResultMap">
+    SELECT
+      
+      task_attach_id, 
+      task_id, 
+      attach_name, 
+      attach_url, 
+      created_date,
+      parent_attach_id,
+      file_size
+
+    FROM
+      public.task_attach
+    WHERE
+      parent_attach_id = #{parentId}
+      
+    ORDER BY 
+      task_attach_id
+  </select>
+</mapper>

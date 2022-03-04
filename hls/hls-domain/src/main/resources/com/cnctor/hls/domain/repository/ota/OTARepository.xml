@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.cnctor.hls.domain.repository.ota.OTARepository">
+	
+	<resultMap id="otaResultMap" type="OTA">
+	  
+	  <id property="otaId" column="ota_id" />
+	  
+	  <result property="name" column="name" /> 
+		<result property="otaTypeId" column="ota_type_id" />
+		<result property="loginUrlFixed1" column="login_url_fixed1" />
+		<result property="loginUrlFixed2" column="login_url_fixed2" />
+		<result property="storeId" column="store_id" />
+		<result property="loginId" column="login_id" />
+		<result property="password" column="password" />
+		<result property="passwordUpdateDeadline" column="password_update_deadline" />
+		<result property="note" column="note" />
+		<result property="status" column="status" />
+		<result property="isDisplayStoreId" column="is_display_store_id" />
+		<result property="otaTypeName" column="ota_type_name" />
+	</resultMap>
+	
+	
+	<insert id="insert" parameterType="OTA">
+    <selectKey keyProperty="otaId" resultType="long"
+      order="BEFORE">
+      SELECT nextval('public."SEQ_OTA"') AS otaId
+    </selectKey>
+
+    INSERT INTO 
+      public.ota
+      (
+        ota_id, 
+        name, 
+        ota_type_id, 
+        login_url_fixed1, 
+        login_url_fixed2, 
+       <!--  store_id, 
+        login_id, 
+        password,  -->
+        password_update_deadline, 
+        note, 
+        status,
+        is_display_store_id
+      )
+    VALUES 
+      (
+        #{otaId}, 
+        #{name}, 
+        #{otaTypeId}, 
+        #{loginUrlFixed1}, 
+        #{loginUrlFixed2}, 
+       <!--  #{storeId},
+        #{loginId}, 
+        #{password},  -->
+        #{passwordUpdateDeadline}, 
+        #{note}, 
+        #{status},
+        #{isDisplayStoreId}
+      )
+  </insert>
+  
+  <select id="findOne" parameterType="Long"
+    resultMap="otaResultMap">
+    
+    SELECT 
+      ota_id, 
+      name, 
+      ota_type_id, 
+      login_url_fixed1, 
+      login_url_fixed2, 
+      store_id, 
+      login_id, 
+      password, 
+      password_update_deadline, 
+      note, 
+      status,
+      is_display_store_id
+    
+    FROM 
+      public.ota
+    
+    WHERE ota_id = #{otaId}
+  </select>
+  
+  <select id="getStoreOTA" parameterType="Long"
+    resultMap="otaResultMap">
+    
+    SELECT 
+      o.ota_id, 
+      o.name, 
+      o.ota_type_id, 
+      o.login_url_fixed1, 
+      o.login_url_fixed2, 
+      o.store_id, 
+      o.login_id, 
+      o.password, 
+      o.password_update_deadline, 
+      o.note, 
+      o.status,
+      o.is_display_store_id
+    
+    FROM 
+      public.store s
+        INNER JOIN store_ota so ON s.store_id = so.store_id
+        INNER JOIN ota o ON so.ota_id = o.ota_id
+    
+    WHERE 
+      s.store_id = #{storeId} AND 
+      o.status =  'ENABLED' AND 
+      o.ota_type_id != 10000
+  </select>
+  
+  <update id="update" parameterType="OTA">
+    UPDATE 
+      public.ota
+      
+    SET 
+      name=#{name}, 
+      ota_type_id=#{otaTypeId},
+      login_url_fixed1=#{loginUrlFixed1}, 
+      login_url_fixed2=#{loginUrlFixed2}, 
+      <!-- store_id=#{storeId},
+      login_id=#{loginId}, 
+      password=#{password}, --> 
+      password_update_deadline=#{passwordUpdateDeadline}, 
+      note=#{note},
+      status=#{status},
+      is_display_store_id = #{isDisplayStoreId} 
+    WHERE 
+      ota_id = #{otaId}
+  </update>
+  
+  <select id="filter" parameterType="OTASearchCriteria"
+    resultMap="otaResultMap">
+    SELECT
+      ota_id, 
+      ota.name, 
+      ota.ota_type_id, 
+      login_url_fixed1, 
+      login_url_fixed2, 
+      <!-- store_id, 
+      login_id, 
+      password,  -->
+      password_update_deadline, 
+      note, 
+      status,
+      is_display_store_id,
+      
+      otype.name as ota_type_name
+    FROM 
+      public.ota AS ota
+      
+      INNER JOIN public.ota_type AS otype
+          ON ota.ota_type_id = otype.ota_type_id
+   
+    <include refid="filterOTAWherePhrase" />
+    
+    <if test="criteria.sortBy != null and criteria.sortBy != ''">
+      ORDER BY ota.${criteria.sortBy}
+      <if test="criteria.sortByType != null and criteria.sortByType != 1">
+        ASC
+      </if>
+      <if test="criteria.sortByType == null or criteria.sortByType == 1">
+        DESC
+      </if>
+    </if>
+    <if
+      test="criteria.page != null and criteria.page != '' and criteria.size != null and criteria.size != ''">
+      OFFSET ((#{criteria.page}-1)*#{criteria.size}) ROWS FETCH
+      NEXT
+      #{criteria.size} ROWS ONLY
+    </if>
+    
+  </select>
+  
+  <select id="countBySearchCriteria" parameterType="OTASearchCriteria"
+    resultType="_long">
+
+    SELECT COUNT(*)
+    
+    FROM 
+      public.ota AS ota
+    
+    <include refid="filterOTAWherePhrase" />
+  </select>
+  
+  <sql id="filterOTAWherePhrase">
+    WHERE 1=1
+    
+    <if test="criteria.otaTypeId != null">
+       AND ota.ota_type_id = #{criteria.otaTypeId}
+    </if>
+    
+    <if test="criteria.name != null and criteria.name !=''">
+      <bind name="nameSearch" value="'%' + criteria.name + '%'" />
+    </if>
+    
+    <if test="criteria.name != null and criteria.name !=''">
+       AND ota.name LIKE #{nameSearch}
+    </if>
+    
+    <if test="criteria.passwordUpdateDeadline != null">
+       AND ota.password_update_deadline = #{criteria.passwordUpdateDeadline}
+    </if>
+    
+    <if test="criteria.status != null and criteria.status !=''">
+       AND ota.status = #{criteria.status}
+    </if>
+  </sql>
+  
+</mapper>

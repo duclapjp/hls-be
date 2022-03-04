@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.cnctor.hls.domain.repository.otatype.OTATypeRepository">
+	
+	<resultMap id="otaTypeResultMap" type="OTAType">
+	  <id property="otaTypeId" column="ota_type_id" />
+	  <result property="name" column="name" />
+	</resultMap>
+  
+  <select id="filter" parameterType="OTASearchCriteria"
+    resultMap="otaTypeResultMap">
+    
+    SELECT
+      ota_type_id,
+      name
+
+    FROM 
+      public.ota_type
+    
+    <if test="criteria.sortBy != null and criteria.sortBy != ''">
+      ORDER BY ${criteria.sortBy}
+      <if test="criteria.sortByType != null and criteria.sortByType != 1">
+        ASC
+      </if>
+      <if test="criteria.sortByType == null or criteria.sortByType == 1">
+        DESC
+      </if>
+    </if>
+    <if
+      test="criteria.page != null and criteria.page != '' and criteria.size != null and criteria.size != ''">
+      OFFSET ((#{criteria.page}-1)*#{criteria.size}) ROWS FETCH
+      NEXT
+      #{criteria.size} ROWS ONLY
+    </if>
+    
+  </select>
+  
+  <select id="count" resultType="_long">
+    SELECT COUNT(*)
+    
+    FROM 
+      public.ota_type
+  </select>
+</mapper>

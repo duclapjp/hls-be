@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.cnctor.hls.domain.repository.account.AccountRepository">
+	<resultMap id="accountResultMap" type="Account">
+		<id property="accountId" column="account_id" />
+		<result property="role" column="role" />
+		<result property="status" column="status" />
+		<result property="chainId" column="chain_id" />
+		<result property="storeId" column="store_id" />
+		<result property="mail" column="mail" />
+		<result property="phone" column="phone" />
+		<result property="note" column="note" />
+		<result property="password" column="password" />
+		<result property="displayName" column="display_name" />
+
+		<result property="notiDest" column="noti_dest" />
+		<result property="mailSetting" column="mail_setting" />
+		<result property="slackSetting" column="slack_setting" />
+		<result property="chatworkSetting" column="chatwork_setting" />
+		<result property="lineSetting" column="line_setting" />
+		<result property="viberRakutenSetting"
+			column="viber_rakuten_setting" />
+
+		<result property="isFirstLogin" column="is_fist_login" />
+
+	</resultMap>
+
+	<resultMap id="directorResultMap" type="Director">
+		<id property="directorId" column="directorId" />
+		<result property="displayName" column="display_name" />
+	</resultMap>
+
+	<resultMap id="accountDisplayResultMap" type="AccountDisplay">
+		<id property="accountId" column="account_id" />
+		<result property="displayName" column="display_name" />
+	</resultMap>
+
+	<select id="countByUsername" parameterType="String"
+		resultType="_long">
+
+		SELECT COUNT(*)
+		FROM public.account AS t1
+		WHERE
+		username =
+		#{username}
+	</select>
+
+	<select id="countByEmail" parameterType="String"
+		resultType="_long">
+
+		SELECT COUNT(*)
+		FROM public.account AS t1
+		WHERE
+		mail =
+		#{email}
+	</select>
+
+	<insert id="insert" parameterType="Account">
+
+		<selectKey keyProperty="accountId" resultType="int"
+			order="BEFORE">
+			SELECT nextval('public."SEQ_ACCOUNT"') AS accountId
+		</selectKey>
+
+		INSERT INTO public.account
+		(
+		account_id,
+		role,
+		status,
+		chain_id,
+		store_id,
+		mail,
+		phone,
+		note,
+		password,
+		display_name,
+		noti_dest,
+		mail_setting,
+		slack_setting,
+		chatwork_setting,
+		line_setting,
+		viber_rakuten_setting,
+		is_fist_login
+		)
+		VALUES
+		(
+		#{accountId},
+		#{role},
+		#{status},
+		#{chainId},
+		#{storeId},
+		#{mail},
+		#{phone},
+		#{note},
+		#{password},
+		#{displayName},
+		#{notiDest},
+		#{mailSetting},
+		#{slackSetting},
+		#{chatworkSetting},
+		#{lineSetting},
+		#{viberRakutenSetting},
+		#{isFirstLogin}
+		)
+	</insert>
+
+	<select id="countBySearchCriteria"
+		parameterType="AccountSearchCriteria" resultType="_long">
+		<if
+			test="criteria.searchKeyword != null and criteria.searchKeyword != ''">
+			<bind name="kw" value="'%' + criteria.searchKeyword + '%'" />
+		</if>
+		<if test="criteria.mail != null and criteria.mail != ''">
+			<bind name="emailSearch" value="'%' + criteria.mail + '%'" />
+		</if>
+		SELECT 
+		  COUNT(*)
+
+		FROM 
+		  public.account AS t1
+    LEFT JOIN 
+      public.chain AS c1 ON t1.chain_id = c1.chain_id
+    LEFT JOIN
+      public.store AS s1 ON t1.store_id = s1.store_id
+      
+    <include refid="filterAccountWherePhrase" />
+		
+	</select>
+
+	<select id="searchCriteria"
+		parameterType="AccountSearchCriteria" resultMap="accountResultMap">
+		<if
+			test="criteria.searchKeyword != null and criteria.searchKeyword != ''">
+			<bind name="kw" value="'%' + criteria.searchKeyword + '%'" />
+		</if>
+		<if test="criteria.mail != null and criteria.mail != ''">
+			<bind name="emailSearch" value="'%' + criteria.mail + '%'" />
+		</if>
+
+		SELECT
+		<foreach item="item" collection="criteria.params"
+			separator=",">
+			t1.${item}
+		</foreach>
+		, c1.name as chainName
+		, s1.name as storeName
+		
+		FROM 
+      public.account AS t1
+    LEFT JOIN 
+      public.chain AS c1 ON t1.chain_id = c1.chain_id
+    LEFT JOIN
+      public.store AS s1 ON t1.store_id = s1.store_id
+
+		<include refid="filterAccountWherePhrase" />
+
+		ORDER BY t1.account_id
+		<if
+			test="criteria.page != null and criteria.page != '' and criteria.size != null and criteria.size != ''">
+			OFFSET ((#{criteria.page}-1)*#{criteria.size}) ROWS FETCH
+			NEXT
+			#{criteria.size} ROWS ONLY
+		</if>
+	</select>
+	
+	
+	<sql id="filterAccountWherePhrase">
+    WHERE 1=1
+    <if test="criteria.role != null and criteria.role != ''">
+      AND t1.role = #{criteria.role}
+    </if>
+    <if test="criteria.userRole == 'ROLE_CHAIN'">
+      AND ( t1.role = 'ROLE_CHAIN' OR t1.role = 'ROLE_STORE')
+    </if>
+    <if test="criteria.userRole == 'ROLE_STORE'">
+      AND ( t1.role = 'ROLE_STORE')
+    </if>
+    <if test="criteria.mail != null and criteria.mail != ''">
+      AND t1.mail LIKE #{emailSearch}
+    </if>
+    <if
+      test="criteria.searchKeyword != null and criteria.searchKeyword != ''">
+      AND ( t1.account_id::text LIKE #{kw} OR
+      t1.display_name LIKE
+      #{kw} OR
+      t1.phone LIKE #{kw} )
+    </if>
+    
+    <if test="criteria.chainId != null and criteria.chainId != ''">
+      AND ( t1.chain_id = #{criteria.chainId} OR s1.chain_id = #{criteria.chainId})
+    </if>
+    
+    <if test="criteria.storeId != null and criteria.storeId != ''">
+      AND t1.store_id = #{criteria.storeId}
+    </if>
+    
+  </sql>
+
+
+	<select id="findByMail" parameterType="String"
+		resultMap="accountResultMap">
+		SELECT
+		account_id,
+		role,
+		status,
+		chain_id,
+		store_id,
+		mail,
+		phone,
+		note,
+		password,
+		display_name,
+		noti_dest,
+		mail_setting,
+		slack_setting,
+		chatwork_setting,
+		line_setting,
+		viber_rakuten_setting,
+		is_fist_login
+
+		FROM
+		public.account
+
+		WHERE
+		mail = #{mail}
+	</select>
+
+
+	<select id="findById" parameterType="long"
+		resultMap="accountResultMap">
+		SELECT
+		account_id,
+		role,
+		status,
+		chain_id,
+		store_id,
+		mail,
+		phone,
+		note,
+		password,
+		display_name,
+		noti_dest,
+		mail_setting,
+		slack_setting,
+		chatwork_setting,
+		line_setting,
+		viber_rakuten_setting,
+		is_fist_login
+
+		FROM
+		public.account
+
+		WHERE
+		account_id = #{accountId}
+	</select>
+
+	<insert id="update" parameterType="Account">
+		UPDATE public.account
+		SET
+		display_name = #{displayName},
+		role = #{role},
+		status = #{status},
+		chain_id= #{chainId},
+		store_id = #{storeId},
+		phone = #{phone},
+		note =
+		#{note},
+		is_fist_login = #{isFirstLogin}
+
+		WHERE
+		account_id = #{accountId}
+	</insert>
+
+	<insert id="updateAccountSetting" parameterType="Account">
+		UPDATE public.account
+		SET
+		display_name = #{displayName},
+		phone =
+		#{phone},
+		<if test="password != null and password != ''">
+			password = #{password},
+		</if>
+		noti_dest = #{notiDest},
+		mail_setting = #{mailSetting},
+		slack_setting =
+		#{slackSetting},
+		chatwork_setting = #{chatworkSetting},
+		line_setting =
+		#{lineSetting},
+		viber_rakuten_setting = #{viberRakutenSetting}
+		WHERE
+		account_id = #{accountId}
+	</insert>
+
+	<insert id="updatePassword" parameterType="Account">
+		UPDATE public.account
+		SET
+		password = #{password}
+		WHERE
+		account_id = #{accountId}
+	</insert>
+
+	<update id="updateMail">
+		UPDATE
+		public.account
+		SET
+		mail = #{mail}
+		WHERE
+		account_id = #{accountId}
+	</update>
+
+
+	<select id="fetchByStore" parameterType="long"
+		resultMap="accountResultMap">
+		SELECT
+		a.account_id,
+		a.role,
+		a.status,
+		a.chain_id,
+		a.store_id,
+		a.mail,
+		a.phone,
+		a.note,
+		a.password,
+		a.display_name,
+		a.noti_dest,
+		a.mail_setting,
+		a.slack_setting,
+		a.chatwork_setting,
+		a.line_setting,
+		a.viber_rakuten_setting
+
+		FROM
+		public.account a JOIN public.store s ON a.store_id = s.store_id
+
+		WHERE
+		s.store_id = #{storeId} AND a.role = 'ROLE_STORE' AND a.status = '利用中'
+		LIMIT 1
+	</select>
+
+	<select id="listDirector" parameterType="AccountSearchCriteria"
+		resultMap="directorResultMap">
+		SELECT
+		account_id as directorId,
+		display_name
+		FROM public.account
+
+		WHERE role = 'ROLE_ADMIN' or role='ROLE_SUBADMIN'
+		ORDER BY display_name
+	</select>
+
+	<select id="listRegister" resultMap="accountDisplayResultMap">
+		SELECT
+		account_id,
+		display_name
+		FROM public.account
+		WHERE role =
+		'ROLE_ADMIN' or role='ROLE_SUBADMIN'
+		or role='ROLE_CHAIN' or
+		role='ROLE_STORE'
+		<if test="sortBy != null and sortBy != ''">
+			ORDER BY ${sortBy}
+		</if>
+	</select>
+
+	<select id="listUser" resultMap="accountDisplayResultMap">
+		SELECT
+		account_id,
+		display_name
+		FROM public.account
+
+		WHERE role = 'ROLE_USER'
+		<if test="sortBy != null and sortBy != ''">
+			ORDER BY ${sortBy}
+		</if>
+	</select>
+
+	<select id="getByIds" resultMap="accountDisplayResultMap">
+		SELECT
+		account_id,
+		display_name
+		FROM
+		public.account
+		WHERE
+		account_id IN
+		<foreach item="id" collection="ids" open="(" separator=","
+			close=")">
+			#{id}
+		</foreach>
+
+		ORDER BY display_name
+	</select>
+
+	<select id="getListUserByRole"
+		resultMap="accountDisplayResultMap">
+		SELECT
+		account_id,
+		display_name
+		FROM
+		public.account
+		<if test="roles != null">
+			WHERE
+			role IN
+			<foreach item="role" collection="roles" open="("
+				separator="," close=")">
+				#{role}
+			</foreach>
+		</if>
+		<if test="sortBy != null and sortBy != ''">
+			ORDER BY ${sortBy}
+		</if>
+	</select>
+
+	<select id="findByChainId" resultMap="accountResultMap">
+		SELECT
+		account_id,
+		display_name
+		FROM public.account
+		<if test="chainId != null and chainId != ''">
+			WHERE chain_id = ${chainId}
+		</if>
+	</select>
+
+	<select id="getUserIdsByChainOrStore"
+		resultType="java.lang.Long">
+		SELECT
+		account_id
+
+		FROM public.account
+
+		WHERE status = '利用中' AND ( 2 = 1
+		<if test="chainId != null and chainId != ''">
+			OR (chain_id = ${chainId} AND role = 'ROLE_CHAIN')
+		</if>
+		<if test="storeId != null and storeId != ''">
+			OR (store_id = ${storeId} AND role = 'ROLE_STORE')
+		</if>
+		)
+	</select>
+
+	<select id="getUserMentions" resultMap="accountDisplayResultMap">
+		SELECT
+		account_id,
+		display_name
+		FROM public.account
+		WHERE 1 = 1
+		<if test="type != null and type == 1">
+		  AND (role = 'ROLE_ADMIN' OR role='ROLE_SUBADMIN'
+      OR role='ROLE_USER')
+		</if>
+		
+		<if test="type != null and type != 1 and storeId != null and storeId != ''">
+			AND (( role='ROLE_STORE' AND store_id = ${storeId})
+			OR ( role='ROLE_CHAIN' AND chain_id IN ( SELECT chain_id FROM store
+			WHERE store_id = ${storeId})) )
+		</if>
+		<if test="sortBy != null and sortBy != ''">
+			ORDER BY ${sortBy} ASC
+		</if>
+	</select>
+</mapper>

@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.cnctor.hls.domain.repository.item.ItemRepository">
+	<resultMap id="itemResultMap" type="Item">
+		<id property="itemId" column="item_id" />
+		
+		<result property="itemCode" column="item_code" />
+		<result property="name" column="name" />
+		<result property="type" column="type" />
+		<result property="showInDefaultPlan" column="show_in_default_plan" />
+		
+	</resultMap>
+	
+	<insert id="upsert" parameterType="Item">
+    
+    INSERT INTO 
+      public.item
+      (
+        item_id, 
+        item_code, 
+        name, 
+        type,
+        show_in_default_plan
+      )
+    VALUES 
+      (
+        #{itemId}, 
+        #{itemCode}, 
+        #{name}, 
+        #{type},
+        #{showInDefaultPlan}
+      )
+    
+    ON CONFLICT (item_id)
+    DO UPDATE SET
+    
+      item_code=#{itemCode}, 
+      name=#{name}, 
+      type=#{type},
+      show_in_default_plan = #{showInDefaultPlan}
+    
+  </insert>
+	
+	<!-- 
+	<insert id="insert" parameterType="Item">
+    <selectKey keyProperty="itemId" resultType="long" order="BEFORE">
+      SELECT nextval('public."SEQ_ITEM"') AS itemId
+    </selectKey>
+
+    INSERT INTO 
+      public.item
+      (
+        item_id, 
+        item_code, 
+        name, 
+        type
+      )
+    VALUES 
+      (
+        #{itemId}, 
+        #{itemCode}, 
+        #{name}, 
+        #{type}
+      )
+  </insert>
+	 -->
+	<update id="update" parameterType="Item">
+    UPDATE
+      public.item
+
+    SET
+      item_code=#{itemCode}, 
+      name=#{name}, 
+      type=#{type}
+      
+    WHERE
+      item_id = #{itemId}
+  </update>
+	
+	<select id="findOne" parameterType="Long"
+    resultMap="itemResultMap">
+    
+    SELECT 
+      item_id, 
+      item_code, 
+      name, 
+      type
+    
+    FROM 
+      public.item
+    
+    WHERE item_id = #{itemId}
+  </select>
+  
+  <delete id="deleteNotIn">
+    DELETE
+    FROM public.item
+
+    WHERE
+    item_code NOT IN
+    <foreach item="item" index="index" collection="items"
+      open="(" separator="," close=")">
+      #{item.itemCode}
+    </foreach>
+  </delete>
+  
+  <delete id="delete">
+    DELETE
+    FROM public.item
+
+    WHERE
+    item_id IN
+    <foreach item="item" index="index" collection="items"
+      open="(" separator="," close=")">
+      #{item.itemId}
+    </foreach>
+  </delete>
+  
+  <select id="findByItemCode" parameterType="String"
+    resultMap="itemResultMap">
+    
+    SELECT 
+      item_id, 
+      item_code, 
+      name, 
+      type
+    
+    FROM 
+      public.item
+    
+    WHERE item_code = #{itemCode}
+  </select>
+  
+  <select id="filter" parameterType="ItemSearchCriteria"
+    resultMap="itemResultMap">
+    
+    SELECT
+      item_id, 
+      item_code, 
+      name, 
+      type
+    FROM 
+      public.item as p
+    
+    <include refid="filterItemWherePhrase" />
+    
+    <if test="criteria.sortBy != null and criteria.sortBy != ''">
+      ORDER BY p.${criteria.sortBy}
+      <if test="criteria.sortByType != null and criteria.sortByType != 1">
+        ASC
+      </if>
+      <if test="criteria.sortByType == null or criteria.sortByType == 1">
+        DESC
+      </if>
+    </if>
+    
+    <if
+      test="criteria.page != null and criteria.page != 0 and criteria.size != null and criteria.size != 0">
+      OFFSET ((#{criteria.page}-1)*#{criteria.size}) ROWS FETCH
+      NEXT
+      #{criteria.size} ROWS ONLY
+    </if>
+    
+  </select>
+  
+  <select id="countBySearchCriteria" parameterType="ItemSearchCriteria"
+    resultType="_long">
+
+    SELECT COUNT(*)
+    
+    FROM 
+      public.item as p
+
+    <include refid="filterItemWherePhrase" />
+    
+  </select>
+  
+  <sql id="filterItemWherePhrase">
+    <where>
+      show_in_default_plan = true
+    
+	    <if test="criteria.name != null and criteria.name !=''">
+	      <bind name="nameSearch" value="'%' + criteria.name + '%'" />
+	    </if>
+	    
+	    <if test="criteria.name != null and criteria.name !=''">
+	       AND p.name LIKE #{nameSearch}
+	    </if>
+	    
+	    <if test="criteria.itemCode != null and criteria.itemCode !=''">
+	       AND p.itemCode = #{criteria.itemCode}
+	    </if>
+	    
+	    <if test="criteria.type != null and criteria.type !=''">
+         AND p.type = #{criteria.type}
+      </if>
+    </where>
+  </sql>
+  
+</mapper>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.cnctor.hls.domain.repository.amountrank.AmountRankRepository">
+	
+	<resultMap id="amountRankResultMap" type="AmountRank">
+	  
+	  <id property="amountRankId" column="amount_rank_id" />
+	  <result property="amountRankNo" column="amount_rank_no" /> 
+	  <result property="storeId" column="store_id" />
+		<result property="amountRankName" column="amount_rank_name" />
+		<result property="enable" column="enable" />
+		<result property="createdDate" column="created_date" />
+		<result property="updatedTime" column="updated_time" />
+		<result property="accountId" column="account_id" />
+		<result property="displayName" column="displayName" />
+		
+	</resultMap>
+
+	
+	<insert id="insert" parameterType="AmountRank">
+    <selectKey keyProperty="amountRankId" resultType="long"
+      order="BEFORE">
+      SELECT nextval('public."SEQ_AMOUNT_RANK"') AS amountRankId
+    </selectKey>
+
+    INSERT INTO 
+      public.amount_rank
+      (
+        amount_rank_id, 
+        amount_rank_no, 
+        store_id, 
+        amount_rank_name, 
+        enable, 
+        created_date, 
+        updated_time, 
+        account_id
+      )
+    VALUES 
+      (
+        #{amountRankId}, 
+        #{amountRankNo}, 
+        #{storeId}, 
+        #{amountRankName}, 
+        #{enable}, 
+        NOW(),
+        NOW(), 
+        #{accountId}
+      )
+  </insert>
+  
+  <update id="update" parameterType="AmountRank">
+    UPDATE 
+      public.amount_rank
+      
+    SET 
+      amount_rank_no=#{amountRankNo}, 
+      amount_rank_name=#{amountRankName},
+      enable=#{enable},
+      updated_time= NOW()
+    WHERE 
+      amount_rank_id = #{amountRankId}
+  </update>
+
+  <delete id="delete" parameterType="java.util.List">
+    DELETE 
+      FROM public.amount_rank
+    
+    WHERE 
+      store_id = #{storeId}
+      <if test="amountRankIds != null and amountRankIds.size > 0">
+      AND amount_rank_id NOT IN 
+	      <foreach item="id" collection="amountRankIds" open="(" separator=","
+	      close=")">
+	      #{id}
+	    </foreach>
+	    </if>
+  </delete>  
+  
+  <select id="findAmountRanks" parameterType="Long"
+    resultMap="amountRankResultMap">
+    SELECT
+      ar.amount_rank_id,
+      ar.amount_rank_no,
+      ar.amount_rank_name,
+      ar.enable,
+      ar.created_date,
+      ar.updated_time,
+      ar.account_id,
+      a.display_name as displayName
+      
+    FROM 
+      public.amount_rank ar
+
+    LEFT JOIN 
+      public.account a
+    ON ar.account_id = a.account_id
+    
+    WHERE ar.store_id = #{storeId}
+    <if test="enable">
+      AND ar.enable is true
+    </if>
+     
+    ORDER BY ar.amount_rank_no ASC
+    
+  </select>
+  
+  
+</mapper>

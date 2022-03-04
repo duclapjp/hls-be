@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:mybatis="http://mybatis.org/schema/mybatis-spring"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring.xsd
+    ">
+
+    <import resource="classpath:/META-INF/spring/hls-env.xml" />
+
+    <!-- define the SqlSessionFactory -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="configLocation" value="classpath:/META-INF/mybatis/mybatis-config.xml" />
+    </bean>
+
+    <!-- scan for Mappers -->
+    <mybatis:scan base-package="com.cnctor.hls.domain.repository" />
+   
+    <!-- define mailSender -->
+    <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+      <property name="host" value="${mail.smtp.host}" />
+      <property name="port" value="${mail.smtp.port}" />
+      <property name="username" value="${mail.smtp.user}" />
+      <property name="password" value="${mail.smtp.password}" />
+      <property name="javaMailProperties">
+        <props>
+          <prop key="mail.smtp.auth">${mail.smtp.auth}</prop>
+          <prop key="mail.smtp.starttls.enable">${mail.smtp.starttls.enable}</prop>
+        </props>
+      </property>
+    </bean>
+    
+    <!-- define freemaker template -->
+    <bean id="freemarkerConfiguration"
+	    class="org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean">
+	    <property name="templateLoaderPath"
+	      value="classpath:/META-INF/freemaker/" />
+	    <property name="defaultEncoding" value="UTF-8" />
+	  </bean>
+	  
+</beans>

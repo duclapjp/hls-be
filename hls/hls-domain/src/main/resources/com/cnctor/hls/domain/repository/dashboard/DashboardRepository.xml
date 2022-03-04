@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.cnctor.hls.domain.repository.dashboard.DashboardRepository">
+	<resultMap id="pendingTaskResultMap" type="PendingTask">
+		<id property="taskId" column="task_id" />
+		<result property="title" column="title" />
+		<result property="status" column="status" />
+
+		<result property="assigneeId" column="assignee_id" />
+		<result property="assigneeName" column="assigneeName" />
+		
+		<result property="dueDate" column="due_date" />		
+		
+		<result property="storeId" column="store_id" />
+    <result property="storeName" column="storeName" />
+		<result property="dayRemain" column="dayRemain" />
+		
+	</resultMap>
+	
+<select id="countPendingTask" parameterType="String"
+    resultType="_long">
+
+    SELECT COUNT(*)
+    FROM public.task
+    AS t1
+
+    WHERE t1.parent_task_id is NULL
+    <if test="criteria.userRole == 1 or criteria.userRole == 2 or criteria.userRole == 3">
+      AND t1.visible = true
+    </if>
+    <if test="criteria.status != null and criteria.status != ''">
+      AND t1.status != #{criteria.status}
+    </if>
+
+    <if test="criteria.userRole == 1 or criteria.userRole == 4">
+      <if test="criteria.storeId != null and criteria.storeId != ''">
+        AND t1.store_id = #{criteria.storeId}
+      </if>
+    </if>
+    <if test="criteria.userRole == 1">
+      <if
+        test="criteria.assigneeId != null and criteria.assigneeId != ''">
+        AND t1.assignee_id = #{criteria.assigneeId}
+      </if>
+    </if>
+    <if test="criteria.userRole == 2">
+      <if test="criteria.storeId != null and criteria.storeId != ''">
+        AND (t1.task_id IN (
+         SELECT child.parent_task_id from public.task AS child
+         WHERE child.store_id = #{criteria.storeId}
+         ) OR
+        (t1.store_id = #{criteria.storeId} AND t1.parent_task_id is NULL)
+        )
+      </if>
+    </if>
+    <if test="criteria.userRole == 3">
+      <if test="criteria.chainId != null and criteria.chainId != ''">
+        AND ( t1.task_id IN (
+        SELECT child.parent_task_id from
+        public.task AS child
+        WHERE child.store_id IN (
+        SELECT s1.store_id FROM
+        public.store s1
+        WHERE s1.chain_id = #{criteria.chainId}
+        )) OR (t1.parent_task_id is NULL AND t1.store_id IN 
+        (SELECT s1.store_id FROM  public.store s1
+        WHERE s1.chain_id = #{criteria.chainId}) )
+        )
+      </if>
+    </if>
+  </select>
+  
+  <select id="getPendingTasks" parameterType="PendingTaskSearchCriteria"
+    resultMap="pendingTaskResultMap">
+
+    SELECT
+    t1.task_id,
+    t1.task_id as taskId,
+    t1.title,
+    t1.status,
+    t1.assignee_id,
+    a1.display_name as assigneeName,
+    t1.store_id,
+    store1.name as storeName,
+    t1.due_date
+    ,
+    CASE 
+      WHEN t1.due_date is NULL THEN null
+      ELSE t1.due_date::date - NOW()::date
+    END 
+    AS dayRemain
+    
+    FROM public.task
+    AS t1
+
+    LEFT OUTER JOIN public.account AS a1
+    ON
+    t1.assignee_id = a1.account_id
+
+    LEFT OUTER JOIN public.store AS store1
+    ON t1.store_id = store1.store_id
+
+    WHERE t1.parent_task_id is NULL
+    <if test="criteria.userRole == 1 or criteria.userRole == 2 or criteria.userRole == 3">
+      AND t1.visible = true
+    </if>
+    <if test="criteria.status != null and criteria.status != ''">
+      AND t1.status != #{criteria.status}
+    </if>
+
+    <if test="criteria.userRole == 1 or criteria.userRole == 4">
+      <if test="criteria.storeId != null and criteria.storeId != ''">
+        AND t1.store_id = #{criteria.storeId}
+      </if>
+    </if>
+    <if test="criteria.userRole == 1">
+      <if
+        test="criteria.assigneeId != null and criteria.assigneeId != ''">
+        AND t1.assignee_id = #{criteria.assigneeId}
+      </if>
+    </if>
+    <if test="criteria.userRole == 2">
+      <if test="criteria.storeId != null and criteria.storeId != ''">
+        AND (t1.task_id IN (
+         SELECT child.parent_task_id from public.task AS child
+         WHERE child.store_id = #{criteria.storeId}
+         ) OR
+        (t1.store_id = #{criteria.storeId} AND t1.parent_task_id is NULL)
+        )
+      </if>
+    </if>
+    <if test="criteria.userRole == 3">
+      <if test="criteria.chainId != null and criteria.chainId != ''">
+        AND ( t1.task_id IN (
+        SELECT child.parent_task_id from
+        public.task AS child
+        WHERE child.store_id IN (
+        SELECT s1.store_id FROM
+        public.store s1
+        WHERE s1.chain_id = #{criteria.chainId}
+        )) OR (t1.parent_task_id is NULL AND t1.store_id IN 
+        (SELECT s1.store_id FROM  public.store s1
+        WHERE s1.chain_id = #{criteria.chainId}) )
+        )
+      </if>
+    </if>
+
+    ORDER BY t1.${criteria.sortBy}
+    <if test="criteria.sortByType != null and criteria.sortByType != 1">
+      ASC
+    </if>
+    <if test="criteria.sortByType == null or criteria.sortByType == 1">
+      DESC
+    </if>
+    <if
+      test="criteria.page != null and criteria.page != '' and criteria.size != null and criteria.size != ''">
+      OFFSET ((#{criteria.page}-1)*#{criteria.size}) ROWS FETCH
+      NEXT
+      #{criteria.size} ROWS ONLY
+    </if>
+  </select>
+  
+    <select id="findChildPendingTasks" parameterType="PendingTaskSearchCriteria"
+    resultMap="pendingTaskResultMap">
+    SELECT
+    t1.task_id,
+    t1.task_id as taskId,
+    t1.title,
+    t1.status,
+    t1.assignee_id,
+    a1.display_name as assigneeName,
+    t1.store_id,
+    store1.name as storeName,
+    t1.due_date
+    ,
+    CASE 
+      WHEN t1.due_date is NULL THEN null
+      ELSE t1.due_date::date - NOW()::date
+    END 
+    AS dayRemain
+    
+    FROM public.task
+    AS t1
+    LEFT OUTER JOIN public.account AS a1
+    ON
+    t1.assignee_id = a1.account_id
+
+    LEFT OUTER JOIN public.store AS store1
+    ON t1.store_id = store1.store_id
+
+    WHERE t1.parent_task_id = #{taskId}
+    <if test="criteria.userRole == 1 or criteria.userRole == 2 or criteria.userRole == 3">
+      AND t1.visible = true
+    </if>
+    <if test="criteria.status != null and criteria.status != ''">
+      AND t1.status != #{criteria.status}
+    </if>
+
+    <if test="criteria.userRole == 1 or criteria.userRole == 4">
+      <if test="criteria.storeId != null and criteria.storeId != ''">
+        AND t1.store_id = #{criteria.storeId}
+      </if>
+    </if>
+    <if test="criteria.userRole == 1">
+      <if
+        test="criteria.assigneeId != null and criteria.assigneeId != ''">
+        AND t1.assignee_id = #{criteria.assigneeId}
+      </if>
+    </if>
+    <if test="criteria.userRole == 2">
+      <if test="criteria.storeId != null and criteria.storeId != ''">
+        AND t1.store_id = #{criteria.storeId}
+      </if>
+    </if>
+    <if test="criteria.userRole == 3">
+      <if test="criteria.chainId != null and criteria.chainId != ''">
+        AND t1.store_id IN (
+          SELECT s1.store_id FROM
+          public.store s1
+          WHERE s1.chain_id = #{criteria.chainId}
+        )
+      </if>
+    </if>
+
+    ORDER BY t1.${criteria.sortBy}
+    <if test="criteria.sortByType != null and criteria.sortByType != 1">
+      ASC
+    </if>
+    <if test="criteria.sortByType == null or criteria.sortByType == 1">
+      DESC
+    </if>
+    <if
+      test="criteria.page != null and criteria.page != '' and criteria.size != null and criteria.size != ''">
+      OFFSET ((#{criteria.page}-1)*#{criteria.size}) ROWS FETCH
+      NEXT
+      #{criteria.size} ROWS ONLY
+    </if>
+  </select>
+</mapper>

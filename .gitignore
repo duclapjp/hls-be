@@ -1,0 +1,11 @@
+/hls/hls-domain/.gitignore
+/hls/hls-env/.gitignore
+/hls/hls-initdb/.gitignore
+/hls/hls-selenium/.gitignore
+/hls/hls-web/.gitignore
+
+/hls/hls-web/target/
+/hls/hls-domain/target/
+/hls/hls-env/target/
+/hls/hls-initdb/target/
+/hls/hls-selenium/target/

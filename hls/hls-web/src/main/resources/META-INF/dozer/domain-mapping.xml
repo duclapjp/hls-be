@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings xmlns="http://dozermapper.github.io/schema/bean-mapping"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://dozermapper.github.io/schema/bean-mapping https://dozermapper.github.io/schema/bean-mapping.xsd">
+
+  <configuration>
+    <copy-by-references>
+      <copy-by-reference>com.cnctor.hls.domain.model.*</copy-by-reference>
+    </copy-by-references>
+  </configuration>
+
+  <mapping map-id="chain_map_nonnull" map-null="false">
+    <class-a> com.cnctor.hls.app.chain.ChainForm
+    </class-a>
+    <class-b>com.cnctor.hls.domain.model.Chain
+    </class-b>
+  </mapping>
+  
+  <mapping map-id="store_map_nonnull" map-null="false">
+    <class-a> com.cnctor.hls.app.store.StoreForm
+    </class-a>
+    <class-b>com.cnctor.hls.domain.model.Store
+    </class-b>
+    
+    <field-exclude>
+      <a>siteControllers</a>
+      <b>siteControllers</b>
+    </field-exclude>
+    
+    <field-exclude>
+      <a>otas</a>
+      <b>otas</b>
+    </field-exclude>
+    
+  </mapping>
+
+</mappings> 

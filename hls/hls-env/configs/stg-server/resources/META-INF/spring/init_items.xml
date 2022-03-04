@@ -1,0 +1,592 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configs>
+
+	<item>
+	    <itemId>10010</itemId>
+	    <itemCode>OTA_ITEM</itemCode>
+	    <name>対象OTA</name>
+	    <type>CheckBox</type>
+	    <showInDefaultPlan>false</showInDefaultPlan>
+	  </item>
+  
+	<item>
+		<itemId>10011</itemId>
+		<itemCode>ITEM1</itemCode>
+		<name>使用客室</name>
+		<type>CheckBox</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10012</itemId>
+		<itemCode>ITEM2</itemCode>
+		<name>プランタイトル</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10013</itemId>
+		<itemCode>ITEM3</itemCode>
+		<name>プラン文章</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10014</itemId>
+		<itemCode>ITEM4</itemCode>
+		<name>宿泊可能期間</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10015</itemId>
+		<itemCode>ITEM5</itemCode>
+		<name>掲載期間</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10016</itemId>
+		<itemCode>ITEM6</itemCode>
+		<name>手仕舞い日</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10017</itemId>
+		<itemCode>ITEM7</itemCode>
+		<name>チェックイン</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10018</itemId>
+		<itemCode>ITEM8</itemCode>
+		<name>チェックアウト</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10019</itemId>
+		<itemCode>ITEM9</itemCode>
+		<name>最短連泊数</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10020</itemId>
+		<itemCode>ITEM10</itemCode>
+		<name>最長連泊数</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10021</itemId>
+		<itemCode>ITEM11</itemCode>
+		<name>食事条件</name>
+		<type>Checkbox</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10022</itemId>
+		<itemCode>ITEM12</itemCode>
+		<name>決済方法</name>
+		<type>Checkbox</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10023</itemId>
+		<itemCode>ITEM13</itemCode>
+		<name>予約者への質問</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+
+	<item>
+		<itemId>10024</itemId>
+		<itemCode>ITEM14</itemCode>
+		<name>料金特記</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10025</itemId>
+		<itemCode>ITEM15</itemCode>
+		<name>予約受付開始日時</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10026</itemId>
+		<itemCode>ITEM16</itemCode>
+		<name>キャンセルポリシー</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+		<deleted>true</deleted>
+	</item>
+
+	<item>
+		<itemId>10027</itemId>
+		<itemCode>ITEM17</itemCode>
+		<name>施設負担ポイント</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10028</itemId>
+		<itemCode>ITEM18</itemCode>
+		<name>子供料金</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+		<deleted>true</deleted>
+	</item>
+
+	<item>
+		<itemId>10029</itemId>
+		<itemCode>ITEM19</itemCode>
+		<name>子供料金特記</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10030</itemId>
+		<itemCode>ITEM20</itemCode>
+		<name>特記事項</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10031</itemId>
+		<itemCode>ITEM21</itemCode>
+		<name>販売料金</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10032</itemId>
+		<itemCode>ITEM22</itemCode>
+		<name>入湯税</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10033</itemId>
+		<itemCode>ITEM23</itemCode>
+		<name>パッケージ用プラン文章</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10034</itemId>
+		<itemCode>ITEM24</itemCode>
+		<name>プラン掲載順位</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10035</itemId>
+		<itemCode>ITEM25</itemCode>
+		<name>パッケージ</name>
+		<type>CheckBox</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10036</itemId>
+		<itemCode>ITEM26</itemCode>
+		<name>グローバル集客・サービス用追加情報</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10037</itemId>
+		<itemCode>ITEM27</itemCode>
+		<name>宿ログ投稿</name>
+		<type>CheckBox</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10038</itemId>
+		<itemCode>ITEM28</itemCode>
+		<name>販売先</name>
+		<type>CheckBox</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10039</itemId>
+		<itemCode>ITEM29</itemCode>
+		<name>インバウンド販売</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10040</itemId>
+		<itemCode>ITEM30</itemCode>
+		<name>プラン特色</name>
+		<type>CheckBox</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10041</itemId>
+		<itemCode>ITEM31</itemCode>
+		<name>楽天スーパーポイント</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10042</itemId>
+		<itemCode>ITEM32</itemCode>
+		<name>限定販売数</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10043</itemId>
+		<itemCode>ITEM33</itemCode>
+		<name>男女の受入限定</name>
+		<type>CheckBox</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10044</itemId>
+		<itemCode>ITEM34</itemCode>
+		<name>プラン形態</name>
+		<type>CheckBox</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10045</itemId>
+		<itemCode>ITEM35</itemCode>
+		<name>プラン紹介文１</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10046</itemId>
+		<itemCode>ITEM36</itemCode>
+		<name>プラン紹介文２</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10047</itemId>
+		<itemCode>ITEM37</itemCode>
+		<name>お食事紹介文</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10048</itemId>
+		<itemCode>ITEM38</itemCode>
+		<name>予約変更時使用料金設定</name>
+		<type>CheckBox</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10049</itemId>
+		<itemCode>ITEM39</itemCode>
+		<name>販売先指定</name>
+		<type>CheckBox</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10050</itemId>
+		<itemCode>ITEM40</itemCode>
+		<name>プランコード</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10051</itemId>
+		<itemCode>ITEM41</itemCode>
+		<name>料金の範囲</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10052</itemId>
+		<itemCode>ITEM42</itemCode>
+		<name>部屋タイプ名称</name>
+		<type>Text</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10053</itemId>
+		<itemCode>ITEM43</itemCode>
+		<name>受け入れ人数</name>
+		<type>Text</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10054</itemId>
+		<itemCode>ITEM44</itemCode>
+		<name>部屋タイプ説明</name>
+		<type>Text</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10055</itemId>
+		<itemCode>ITEM45</itemCode>
+		<name>部屋の広さ</name>
+		<type>Text</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10056</itemId>
+		<itemCode>ITEM46</itemCode>
+		<name>ルームタイプ</name>
+		<type>CheckBox</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10057</itemId>
+		<itemCode>ITEM47</itemCode>
+		<name>部屋設備</name>
+		<type>CheckBox</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10058</itemId>
+		<itemCode>ITEM48</itemCode>
+		<name>ベッド情報</name>
+		<type>Text</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10059</itemId>
+		<itemCode>ITEM49</itemCode>
+		<name>部屋の料金形式</name>
+		<type>CheckBox</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10060</itemId>
+		<itemCode>ITEM50</itemCode>
+		<name>公開フラグ</name>
+		<type>CheckBox</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10061</itemId>
+		<itemCode>ITEM51</itemCode>
+		<name>ID</name>
+		<type>Text</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10062</itemId>
+		<itemCode>ITEM52</itemCode>
+		<name>決済方法</name>
+		<type>CheckBox</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10063</itemId>
+		<itemCode>ITEM53</itemCode>
+		<name>グレード</name>
+		<type>CheckBox</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10064</itemId>
+		<itemCode>ITEM54</itemCode>
+		<name>眺望</name>
+		<type>CheckBox</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10065</itemId>
+		<itemCode>ITEM55</itemCode>
+		<name>寝具</name>
+		<type>Text</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10066</itemId>
+		<itemCode>ITEM56</itemCode>
+		<name>受け入れ条件</name>
+		<type>CheckBox</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10067</itemId>
+		<itemCode>ITEM57</itemCode>
+		<name>基本提供室数の設定</name>
+		<type>Text</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10068</itemId>
+		<itemCode>ITEM58</itemCode>
+		<name>客室利用用途</name>
+		<type>CheckBox</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10069</itemId>
+		<itemCode>ITEM59</itemCode>
+		<name>お子様の添い寝</name>
+		<type>Text</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10070</itemId>
+		<itemCode>ITEM60</itemCode>
+		<name>部屋コード</name>
+		<type>Text</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10071</itemId>
+		<itemCode>ITEM61</itemCode>
+		<name>画像</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10072</itemId>
+		<itemCode>ITEM62</itemCode>
+		<name>キャプション</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10073</itemId>
+		<itemCode>ITEM63</itemCode>
+		<name>表示設定・並び</name>
+		<type>Text</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10074</itemId>
+		<itemCode>ITEM64</itemCode>
+		<name>対象期間</name>
+		<type>Text</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10075</itemId>
+		<itemCode>ITEM65</itemCode>
+		<name>編集ファイル</name>
+		<type>Text</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10076</itemId>
+		<itemCode>ITEM66</itemCode>
+		<name>編集範囲</name>
+		<type>Text</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10077</itemId>
+		<itemCode>ITEM67</itemCode>
+		<name>対象エリア</name>
+		<type>Text</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10078</itemId>
+		<itemCode>ITEM68</itemCode>
+		<name>日付</name>
+		<type>Text</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10079</itemId>
+		<itemCode>ITEM69</itemCode>
+		<name>対象プラン</name>
+		<type>Text</type>
+		<showInDefaultPlan>true</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10080</itemId>
+		<itemCode>ITEM70</itemCode>
+		<name>対象人数</name>
+		<type>Text</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+	<item>
+		<itemId>10081</itemId>
+		<itemCode>ITEM71</itemCode>
+		<name>参照ページ</name>
+		<type>Text</type>
+		<showInDefaultPlan>false</showInDefaultPlan>
+	</item>
+
+
+  <item>
+    <itemId>10082</itemId>
+    <itemCode>ITEM72</itemCode>
+    <name>予約可能期間</name>
+    <type>Text</type>
+    <showInDefaultPlan>true</showInDefaultPlan>
+  </item>
+  
+</configs>

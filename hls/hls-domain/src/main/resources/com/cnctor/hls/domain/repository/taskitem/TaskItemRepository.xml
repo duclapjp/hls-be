@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.cnctor.hls.domain.repository.taskitem.TaskItemRepository">
+	
+	<resultMap id="taskItemResultMap" type="TaskItem">
+		<id property="planId" column="plan_id" />
+    <id property="itemId" column="item_id" />
+    <id property="itemJsonValue" column="item_json_value" />
+	</resultMap>
+	
+  <insert id="insert">
+
+    INSERT INTO 
+      public.task_item
+      (
+	       plan_id, 
+	       item_id,
+	       item_json_value
+	    )
+	    
+	    VALUES 
+	    (
+	       #{planId}, 
+	       #{itemId},
+	       #{itemJsonValue}
+	    )
+  </insert>
+	
+	<delete id="delete">
+    DELETE 
+      FROM public.plan_item
+    
+    WHERE 
+      plan_id = #{planId} 
+      AND item_id IN 
+        <foreach item="itemId" index="index" collection="itemIds"
+             open="(" separator="," close=")">
+          #{itemId}
+        </foreach>
+  </delete>
+  
+  <insert id="upsert">
+
+    INSERT INTO 
+      public.task_item
+      (
+         task_id, 
+         item_id,
+         item_json_value
+      )
+      
+      VALUES 
+      (
+         #{taskId}, 
+         #{itemId},
+         #{itemJsonValue}
+      )
+      
+      ON CONFLICT (task_id, item_id) 
+      DO UPDATE SET
+        item_json_value=#{itemJsonValue}
+      
+  </insert>
+</mapper>

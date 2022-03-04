@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.cnctor.hls.domain.repository.storesitecontroller.StoreSiteControllerRepository">
+	<resultMap id="storeSiteControllerResultMap"
+		type="StoreSiteController">
+
+		<id property="storeId" column="store_id" />
+		<id property="siteControllerId" column="site_controller_id" />
+
+		<result property="url" column="url" />
+		<result property="storeCode" column="store_code" />
+		<result property="username" column="username" />
+		<result property="password" column="password" />
+		<result property="expiredDate" column="expired_date" />
+		<result property="note" column="note" />
+	</resultMap>
+
+	<resultMap id="siteControllerResultMap" type="SiteController">
+		<id property="siteControllerId" column="site_controller_id" />
+		<result property="name" column="name" />
+	</resultMap>
+
+	<insert id="upsert" parameterType="StoreSiteController">
+
+		INSERT INTO
+
+		public.store_site_controller
+		(
+		url,
+		store_code,
+		username,
+		password,
+		expired_date,
+		note,
+		store_id,
+		site_controller_id
+		)
+
+		VALUES
+
+		(
+		#{url},
+		#{storeCode},
+		#{username},
+		#{password},
+		#{expiredDate},
+		#{note},
+		#{storeId},
+		#{siteControllerId}
+		)
+
+		ON CONFLICT (store_id, site_controller_id)
+		DO UPDATE SET
+
+		url=#{url},
+		store_code=#{storeCode},
+		username=#{username},
+		password=#{password},
+		expired_date=#{expiredDate},
+		note=#{note}
+
+	</insert>
+
+	<delete id="delete">
+		DELETE
+		FROM public.store_site_controller
+
+		WHERE
+		store_id = #{storeId}
+		AND site_controller_id IN
+		<foreach item="item" index="index" collection="controllers"
+			open="(" separator="," close=")">
+			#{item.siteControllerId}
+		</foreach>
+	</delete>
+
+	<select id="getAllSiteController" parameterType="String"
+		resultMap="siteControllerResultMap">
+		SELECT
+		site_controller_id,
+		name
+
+		FROM
+		public.site_controller
+
+		ORDER BY name
+	</select>
+
+</mapper>

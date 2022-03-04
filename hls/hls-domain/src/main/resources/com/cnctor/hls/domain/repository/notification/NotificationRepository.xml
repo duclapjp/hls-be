@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.cnctor.hls.domain.repository.notification.NotificationRepository">
+	<resultMap id="notificationResultMap" type="Notification">
+		<id property="notificationId" column="notification_id" />
+		<result property="createdDate" column="created_date" />
+		<result property="title" column="title" />
+		<result property="creatorId" column="creator_id" />
+		<result property="creatorName" column="creatorName" />
+		<result property="recipientId" column="recipient_id" />
+		<result property="recipientName" column="recipientName" />
+		<result property="actionId" column="action_id" />
+		<result property="actionValue" column="action_value" />
+	</resultMap>
+
+	<insert id="insert" parameterType="Notification">
+
+		<selectKey keyProperty="notificationId" resultType="long"
+			order="BEFORE">
+			SELECT nextval('public."SEQ_NOTIFICATION"') AS notificationId
+		</selectKey>
+
+		INSERT INTO
+		public.notification
+		(
+		notification_id,
+		created_date,
+		title,
+		creator_id,
+		recipient_id,
+		action_id,
+		action_value
+		)
+		VALUES
+		(
+		#{notificationId},
+		NOW(),
+		#{title},
+		#{creatorId},
+		#{recipientId},
+		#{actionId},
+		#{actionValue}
+		)
+	</insert>
+
+
+	<select id="findOne" parameterType="Long"
+		resultMap="notificationResultMap">
+		SELECT
+		notification_id as notificationId,
+		notification_id,
+		created_date,
+    title,
+    creator_id,
+    recipient_id,
+    action_id,
+    action_value
+
+		FROM
+		public.notification
+		WHERE
+		notification_id = #{notificationId};
+	</select>
+  
+  <select id="countNotificatons"
+    parameterType="NotificationSearchCriteria" resultType="_long">
+   SELECT
+    COUNT(*)
+
+    FROM
+    public.notification n1
+
+    LEFT JOIN public.account AS a1
+    ON n1.creator_id = a1.account_id
+    
+    LEFT JOIN public.account AS a2
+    ON n1.recipient_id = a2.account_id
+
+    WHERE 1=1
+    <if test="criteria.recipientId != null and criteria.recipientId != 0">
+      AND n1.recipient_id = #{criteria.recipientId}
+    </if>
+  </select>
+
+  <select id="getNotificatons"
+    parameterType="NotificationSearchCriteria" resultMap="notificationResultMap">
+    SELECT
+    n1.notification_id as notificationId,
+    n1.notification_id,
+    n1.created_date,
+    n1.title,
+    n1.creator_id,
+    n1.recipient_id,
+    n1.action_id,
+    n1.action_value,
+    a1.display_name as creatorName,
+    a2.display_name as recipientName
+
+    FROM
+    public.notification n1
+
+    LEFT JOIN public.account AS a1
+    ON n1.creator_id = a1.account_id
+    
+    LEFT JOIN public.account AS a2
+    ON n1.recipient_id = a2.account_id
+
+    WHERE 1=1
+    <if test="criteria.recipientId != null and criteria.recipientId != 0">
+      AND n1.recipient_id = #{criteria.recipientId}
+    </if>
+
+    ORDER BY n1.${criteria.sortBy}
+    <if test="criteria.sortByType != null and criteria.sortByType != 1">
+      ASC
+    </if>
+    <if test="criteria.sortByType == null or criteria.sortByType == 1">
+      DESC
+    </if>
+    <if
+      test="criteria.page != null and criteria.page != '' and criteria.size != null and criteria.size != ''">
+      OFFSET ((#{criteria.page}-1)*#{criteria.size}) ROWS FETCH
+      NEXT
+      #{criteria.size} ROWS ONLY
+    </if>
+  </select>
+  
+  
+</mapper>

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.cnctor.hls.domain.repository.chain.ChainRepository">
+	<resultMap id="chainResultMap" type="Chain">
+		<id property="chainId" column="chain_id" />
+
+		<result property="name" column="name" />
+		<result property="contractStatus" column="contract_status" />
+		<result property="note" column="note" />
+		<result property="directorId1" column="director_id_1" />
+		<result property="directorId2" column="director_id_2" />
+		<result property="directorId3" column="director_id_3" />
+
+		<result property="directorName1" column="directorName1" />
+		<result property="directorName2" column="directorName2" />
+		<result property="directorName3" column="directorName3" />
+
+		<result property="managerMail" column="manager_mail" />
+		<result property="managerName" column="manager_name" />
+		<result property="managerPhone" column="manager_phone" />
+
+		<collection property="stores" select="fetchStoresQuery"
+			column="chainId" ofType="Store" fetchType="lazy"></collection>
+
+	</resultMap>
+
+	<resultMap id="chainResultMap2" type="Chain">
+		<id property="chainId" column="chain_id" />
+		<result property="name" column="name" />
+	</resultMap>
+
+	<select id="fetchStoresQuery" resultType="Store">
+		SELECT
+		*
+		FROM
+		public.store
+		WHERE
+		chain_id=#{chainId}
+		ORDER BY store_id
+	</select>
+
+	<select id="countById" parameterType="Long" resultType="_long">
+		SELECT
+		COUNT(*)
+		FROM public.chain
+		WHERE
+		chain_id = #{chainId}
+	</select>
+
+	<select id="getAllChain" parameterType="String"
+		resultMap="chainResultMap2">
+		SELECT
+		chain_id,
+		name
+
+		FROM
+		public.chain
+
+		ORDER BY chain_id
+	</select>
+
+	<insert id="insert" parameterType="Chain">
+
+		<selectKey keyProperty="chainId" resultType="long"
+			order="BEFORE">
+			SELECT nextval('public."SEQ_CHAIN"') AS chainId
+		</selectKey>
+
+		INSERT INTO
+		public.chain
+		(
+		chain_id,
+		contract_status,
+		name,
+		director_id_1,
+		director_id_2,
+		director_id_3,
+		manager_mail,
+		note
+		)
+		VALUES
+		(
+		#{chainId},
+		#{contractStatus},
+		#{name},
+		#{directorId1},
+		#{directorId2},
+		#{directorId3},
+		#{managerMail},
+		#{note}
+		);
+	</insert>
+
+	<select id="findOne" parameterType="Long"
+		resultMap="chainResultMap">
+		SELECT
+		c.chain_id as chainId,
+		c.chain_id,
+		c.contract_status,
+		c.name,
+		c.director_id_1,
+		c.director_id_2,
+		c.director_id_3,
+		c.manager_mail,
+		c.manager_name,
+		c.manager_phone,
+		c.note,
+		a1.display_name as directorName1,
+		a2.display_name as directorName2,
+		a3.display_name as directorName3
+
+		FROM
+		public.chain c
+
+		LEFT JOIN public.account AS a1 ON c.director_id_1 = a1.account_id
+		LEFT JOIN public.account AS a2 ON c.director_id_2 = a2.account_id
+		LEFT JOIN public.account AS a3 ON c.director_id_3 = a3.account_id
+
+		WHERE
+		c.chain_id = #{chainId};
+	</select>
+
+	<update id="update" parameterType="Chain">
+		UPDATE
+		public.chain
+
+		SET
+		contract_status=#{contractStatus},
+		name=#{name},
+		director_id_1=#{directorId1},
+		director_id_2=#{directorId2},
+		director_id_3=#{directorId3},
+		manager_mail=#{managerMail},
+		manager_name=#{managerName},
+		manager_phone=#{managerPhone},
+		note=#{note}
+
+		WHERE
+		chain_id = #{chainId};
+	</update>
+
+	<select id="countBySearchCriteria"
+		parameterType="ChainSearchCriteria" resultType="_long">
+		<if
+			test="criteria.searchKeyword != null and criteria.searchKeyword != ''">
+			<bind name="kw" value="'%' + criteria.searchKeyword + '%'" />
+		</if>
+
+		SELECT
+		count(*)
+		FROM public.chain c
+
+    LEFT JOIN public.account AS a1 ON c.director_id_1 = a1.account_id
+    LEFT JOIN public.account AS a2 ON c.director_id_2 = a2.account_id
+    LEFT JOIN public.account AS a3 ON c.director_id_3 = a3.account_id
+    
+		WHERE 1=1
+		<if
+			test="criteria.contractStatus != null and criteria.contractStatus != ''">
+			AND c.contract_status = #{criteria.contractStatus}
+		</if>
+		<if test="criteria.chainId != null and criteria.chainId != ''">
+			AND c.chain_id = #{criteria.chainId}
+		</if>
+		<if
+			test="criteria.searchKeyword != null and criteria.searchKeyword != ''">
+			AND ( c.chain_id::text LIKE #{kw}
+      OR a1.display_name LIKE #{kw}
+      OR a2.display_name LIKE #{kw}
+      OR a3.display_name LIKE #{kw} )
+		</if>
+	</select>
+
+
+	<select id="searchCriteria" parameterType="ChainSearchCriteria"
+		resultMap="chainResultMap">
+		<if
+			test="criteria.searchKeyword != null and criteria.searchKeyword != ''">
+			<bind name="kw" value="'%' + criteria.searchKeyword + '%'" />
+		</if>
+
+		SELECT
+		c.chain_id,
+		c.chain_id as chainId,
+		c.contract_status,
+		c.name,
+		c.director_id_1,
+		c.director_id_2,
+		c.director_id_3,
+		c.manager_mail,
+		c.note,
+		a1.display_name as directorName1,
+		a2.display_name as directorName2,
+		a3.display_name as directorName3
+
+		FROM
+		public.chain c
+
+		LEFT JOIN public.account AS a1 ON c.director_id_1 = a1.account_id
+		LEFT JOIN public.account AS a2 ON c.director_id_2 = a2.account_id
+		LEFT JOIN public.account AS a3 ON c.director_id_3 = a3.account_id
+
+		WHERE 1=1
+		<if
+			test="criteria.contractStatus != null and criteria.contractStatus != ''">
+			AND c.contract_status = #{criteria.contractStatus}
+		</if>
+		<if test="criteria.chainId != null and criteria.chainId != ''">
+			AND c.chain_id = #{criteria.chainId}
+		</if>
+		<if
+			test="criteria.searchKeyword != null and criteria.searchKeyword != ''">
+			AND ( c.chain_id::text LIKE #{kw}
+			OR a1.display_name LIKE #{kw}
+			OR a2.display_name LIKE #{kw}
+			OR a3.display_name LIKE #{kw} )
+		</if>
+
+		ORDER BY chain_id
+		<if
+			test="criteria.page != null and criteria.page != '' and criteria.size != null and criteria.size != ''">
+			OFFSET ((#{criteria.page}-1)*#{criteria.size}) ROWS FETCH
+			NEXT #{criteria.size} ROWS ONLY
+		</if>
+	</select>
+</mapper>

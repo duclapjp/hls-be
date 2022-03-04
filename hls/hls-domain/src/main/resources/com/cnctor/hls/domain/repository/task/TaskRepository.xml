@@ -1,0 +1,770 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.cnctor.hls.domain.repository.task.TaskRepository">
+	<resultMap id="taskResultMap" type="TaskResult">
+		<id property="taskId" column="task_id" />
+    <result property="categoryId" column="category_id" />
+
+		<result property="title" column="title" />
+		<result property="attachName" column="attach_name" />
+		<result property="attachUrl" column="attach_url" />
+		<result property="note" column="note" />
+		<result property="status" column="status" />
+		<result property="priority" column="priority" />
+		<result property="assigneeId" column="assignee_id" />
+		<result property="assigneeName" column="assigneeName" />
+		
+		<result property="startDate" column="start_date" />
+		<result property="dueDate" column="due_date" />
+		<result property="estTime" column="est_time" />
+		<result property="estPoint" column="est_point" />
+		<result property="actualTime" column="actual_time" />
+		
+		<result property="actualTime" column="actual_time" />
+		<result property="directorId" column="director_id" />
+		<result property="directorName" column="directorName" />
+		<result property="registerDate" column="register_date" />
+		<result property="registerPersonId" column="register_person_id" />
+		<result property="registerPersonName" column="registerPersonName" />
+		<result property="storeId" column="store_id" />
+    <result property="storeName" column="storeName" />
+		<result property="parentTaskId" column="parent_task_id" />
+		<result property="visible" column="visible" />
+		
+		<result property="planId" column="plan_id" />
+		
+	</resultMap>
+	
+	<resultMap id="taskDetailMap" type="Task">
+    <id property="taskId" column="task_id" />
+    
+    <result property="title" column="title" />
+    <result property="categoryId" column="category_id" />
+    <result property="attachName" column="attach_name" />
+    <result property="attachUrl" column="attach_url" />
+    <result property="note" column="note" />
+    <result property="status" column="status" />
+    <result property="priority" column="priority" />
+    <result property="assigneeId" column="assignee_id" />
+    <result property="startDate" column="start_date" />
+    <result property="dueDate" column="due_date" />
+    <result property="estTime" column="est_time" />
+    <result property="estPoint" column="est_point" />
+    <result property="actualTime" column="actual_time" />
+    <result property="directorId" column="director_id" />
+    <result property="registerDate" column="register_date" />
+    <result property="registerPersonId" column="register_person_id" />
+    <result property="storeId" column="store_id" />
+    <result property="parentTaskId" column="parent_task_id" />
+    <result property="visible" column="visible" />
+    
+    <result property="planId" column="plan_id" />
+    
+    <collection property="attachs" select="fetchAttachsQuery" column="taskId" 
+        ofType="TaskAttach" fetchType="eager">
+    </collection>
+    
+    <collection property="items" select="fetchItemsQuery" column="task_id" 
+        ofType="TaskItem" fetchType="eager">
+    </collection>
+    
+  </resultMap>
+  
+  <select id="fetchItemsQuery" resultType="TaskItem">
+    SELECT
+      
+      pi.task_id,
+      pi.item_id,
+      i.item_code,
+      pi.item_json_value
+      
+    FROM
+      public.task_item pi INNER JOIN public.item i ON pi.item_id = i.item_id
+      
+    WHERE
+      pi.task_id=#{task_id}
+
+    ORDER BY
+      pi.item_id asc
+    
+  </select>
+
+	<select id="getTask" parameterType="String"
+		resultMap="taskResultMap">
+		SELECT
+		*
+
+		FROM
+		public.task
+
+		ORDER BY task_id DESC
+	</select>
+	
+	<select id="countByEmail" parameterType="String"
+    resultType="_long">
+    SELECT COUNT(*)
+    FROM public.account AS t1
+    WHERE
+    mail =
+    #{email}
+  </select>
+	
+<select id="countBySearchCriteria" parameterType="String"
+    resultType="_long">
+    <if
+      test="criteria.searchKeyword != null and criteria.searchKeyword != ''">
+      <bind name="kw" value="'%' + criteria.searchKeyword + '%'" />
+    </if>
+
+    SELECT COUNT(*)
+    FROM public.task
+    AS t1
+
+    LEFT OUTER JOIN public.account AS
+    a1
+    ON t1.assignee_id = a1.account_id
+
+    LEFT OUTER JOIN public.store AS
+    store1
+    ON t1.store_id = store1.store_id
+
+    LEFT OUTER JOIN public.account
+    AS a2
+    ON t1.director_id = a2.account_id
+
+    LEFT OUTER JOIN public.account
+    AS a3
+    ON t1.register_person_id = a3.account_id
+
+    WHERE t1.parent_task_id is NULL
+    <if test="criteria.userRole == 1 or criteria.userRole == 2 or criteria.userRole == 3">
+      AND t1.visible = true
+    </if>
+    <if test="criteria.status != null and criteria.status != ''">
+      <if test="criteria.status == '完了以外'">
+        AND t1.status != '完了'
+      </if>
+      <if test="criteria.status != '完了以外'">
+        AND t1.status = #{criteria.status}
+      </if>
+    </if>
+    <if
+      test="criteria.registerPersonId != null and criteria.registerPersonId != ''">
+      AND t1.register_person_id = #{criteria.registerPersonId}
+    </if>
+    <if
+      test="criteria.searchKeyword != null and criteria.searchKeyword != ''">
+      AND ( t1.task_id::text LIKE #{kw} OR store1.name LIKE #{kw} OR
+      t1.title LIKE #{kw} )
+    </if>
+    <if test="criteria.userRole == 1 or criteria.userRole == 4">
+      <if test="criteria.storeId != null and criteria.storeId != ''">
+        AND t1.store_id = #{criteria.storeId}
+      </if>
+    </if>
+    <if test="criteria.userRole == 1 or criteria.userRole == 4">
+      <if test="criteria.priority != null and criteria.priority != ''">
+        AND t1.priority = #{criteria.priority}
+      </if>
+      <if
+        test="criteria.assigneeId != null and criteria.assigneeId != ''">
+        AND t1.assignee_id = #{criteria.assigneeId}
+      </if>
+      <if
+        test="criteria.directorId != null and criteria.directorId != ''">
+        AND t1.director_id = #{criteria.directorId}
+      </if>
+    </if>
+    <if test="criteria.userRole == 2 or criteria.userRole == 3">
+      <if test="criteria.storeId != null and criteria.storeId != ''">
+        AND (t1.task_id IN (
+         SELECT child.parent_task_id from public.task AS child
+         WHERE child.store_id = #{criteria.storeId}
+         ) OR
+        (t1.store_id = #{criteria.storeId} AND t1.parent_task_id is NULL)
+        )
+      </if>
+    </if>
+    <if test="criteria.userRole == 3 and criteria.storeId == null">
+      <if test="criteria.chainId != null and criteria.chainId != ''">
+        AND ( t1.task_id IN (
+        SELECT child.parent_task_id from
+        public.task AS child
+        WHERE child.store_id IN (
+        SELECT s1.store_id FROM
+        public.store s1
+        WHERE s1.chain_id = #{criteria.chainId}
+        )) OR (t1.parent_task_id is NULL AND t1.store_id IN 
+        (SELECT s1.store_id FROM  public.store s1
+        WHERE s1.chain_id = #{criteria.chainId}) )
+        )
+      </if>
+    </if>
+  </select>
+	
+  <select id="searchCriteria" parameterType="TaskSearchCriteria"
+    resultMap="taskResultMap">
+    <if
+      test="criteria.searchKeyword != null and criteria.searchKeyword != ''">
+      <bind name="kw" value="'%' + criteria.searchKeyword + '%'" />
+    </if>
+    SELECT
+    t1.task_id,
+    t1.task_id as taskId,
+    t1.category_id,
+    t1.title,
+    t1.status,
+    t1.priority,
+    t1.assignee_id,
+    a1.display_name as assigneeName,
+    t1.store_id,
+    store1.name as storeName,
+    t1.register_date,
+    t1.start_date,
+    t1.due_date,
+    t1.est_time,
+    t1.est_point,
+    t1.actual_time,
+    t1.director_id,
+    a2.display_name as directorName,
+    t1.register_person_id,
+    a3.display_name
+    as registerPersonName
+    <if test="criteria.userRole == 3">
+      ,(select count(*) from public.account acc
+      where
+      acc.account_id = #{criteria.accountId}
+      and acc.chain_id IN (
+      Select
+      createaccount.chain_id
+      from public.account AS createaccount
+      where
+      createaccount.account_id = t1.register_person_id)) as total
+    </if>
+
+    FROM public.task
+    AS t1
+
+    LEFT OUTER JOIN public.account AS a1
+    ON
+    t1.assignee_id = a1.account_id
+
+    LEFT OUTER JOIN public.store AS store1
+    ON t1.store_id = store1.store_id
+
+    LEFT OUTER JOIN public.account AS a2
+    ON t1.director_id = a2.account_id
+
+    LEFT OUTER JOIN public.account AS a3
+    ON t1.register_person_id = a3.account_id
+
+    WHERE t1.parent_task_id is NULL
+    <if test="criteria.userRole == 1 or criteria.userRole == 2 or criteria.userRole == 3">
+      AND t1.visible = true
+    </if>
+    <if test="criteria.status != null and criteria.status != ''">
+      <if test="criteria.status == '完了以外'">
+        AND t1.status != '完了'
+      </if>
+      <if test="criteria.status != '完了以外'">
+        AND t1.status = #{criteria.status}
+      </if>
+    </if>
+    <if
+      test="criteria.registerPersonId != null and criteria.registerPersonId != ''">
+      AND t1.register_person_id = #{criteria.registerPersonId}
+    </if>
+    <if
+      test="criteria.searchKeyword != null and criteria.searchKeyword != ''">
+      AND ( t1.task_id::text LIKE #{kw} OR store1.name LIKE #{kw} OR
+      t1.title LIKE #{kw} )
+    </if>
+    <if test="criteria.userRole == 1 or criteria.userRole == 4">
+      <if test="criteria.storeId != null and criteria.storeId != ''">
+        AND t1.store_id = #{criteria.storeId}
+      </if>
+    </if>
+    <if test="criteria.userRole == 1 or criteria.userRole == 4">
+      <if test="criteria.priority != null and criteria.priority != ''">
+        AND t1.priority = #{criteria.priority}
+      </if>
+      <if
+        test="criteria.assigneeId != null and criteria.assigneeId != ''">
+        AND t1.assignee_id = #{criteria.assigneeId}
+      </if>
+      <if
+        test="criteria.directorId != null and criteria.directorId != ''">
+        AND t1.director_id = #{criteria.directorId}
+      </if>
+    </if>
+     <if test="criteria.userRole == 2 or criteria.userRole == 3">
+      <if test="criteria.storeId != null and criteria.storeId != ''">
+        AND (t1.task_id IN (
+         SELECT child.parent_task_id from public.task AS child
+         WHERE child.store_id = #{criteria.storeId}
+         ) OR
+        (t1.store_id = #{criteria.storeId} AND t1.parent_task_id is NULL)
+        )
+      </if>
+    </if>
+    <if test="criteria.userRole == 3 and criteria.storeId == null">
+      <if test="criteria.chainId != null and criteria.chainId != ''">
+        AND ( t1.task_id IN (
+        SELECT child.parent_task_id from
+        public.task AS child
+        WHERE child.store_id IN (
+        SELECT s1.store_id FROM
+        public.store s1
+        WHERE s1.chain_id = #{criteria.chainId}
+        )) OR (t1.parent_task_id is NULL AND t1.store_id IN 
+        (SELECT s1.store_id FROM  public.store s1
+        WHERE s1.chain_id = #{criteria.chainId}) )
+        )
+      </if>
+    </if>
+
+    ORDER BY t1.${criteria.sortBy}
+    <if test="criteria.sortByType != null and criteria.sortByType != 1">
+      ASC
+    </if>
+    <if test="criteria.sortByType == null or criteria.sortByType == 1">
+      DESC
+    </if>
+    <if
+      test="criteria.page != null and criteria.page != '' and criteria.size != null and criteria.size != ''">
+      OFFSET ((#{criteria.page}-1)*#{criteria.size}) ROWS FETCH
+      NEXT
+      #{criteria.size} ROWS ONLY
+    </if>
+  </select>
+  
+  <select id="findChildTasks" resultMap="taskResultMap">
+    SELECT
+    t1.task_id,
+    t1.task_id as taskId,
+    t1.category_id,
+    t1.title,
+    t1.status,
+    t1.priority,
+    t1.assignee_id,
+    a1.display_name as assigneeName,
+    t1.store_id,
+    store1.name as storeName,
+    t1.register_date,
+    t1.start_date,
+    t1.due_date,
+    t1.est_time,
+    t1.est_point,
+    t1.actual_time,
+    t1.director_id,
+    a2.display_name as directorName,
+    t1.register_person_id,
+    a3.display_name
+    as registerPersonName
+
+    FROM public.task AS t1
+
+    LEFT OUTER JOIN public.account AS a1
+    ON
+    t1.assignee_id = a1.account_id
+
+    LEFT OUTER JOIN public.store AS store1
+    ON t1.store_id = store1.store_id
+
+    LEFT OUTER JOIN public.account AS a2
+    ON t1.director_id = a2.account_id
+
+    LEFT OUTER JOIN public.account AS a3
+    ON t1.register_person_id = a3.account_id
+
+    WHERE t1.parent_task_id = #{taskId}
+    <if test="criteria.userRole == 1 or criteria.userRole == 2 or criteria.userRole == 3">
+      AND t1.visible = true
+    </if>
+    <if test="criteria.userRole == 2">
+      <if test="criteria.storeId != null and criteria.storeId != ''">
+        AND t1.store_id = #{criteria.storeId}
+      </if>
+    </if>
+    <if test="criteria.userRole == 3">
+      <if test="criteria.chainId != null and criteria.chainId != ''">
+        AND t1.store_id IN (
+          SELECT s1.store_id FROM
+          public.store s1
+          WHERE s1.chain_id = #{criteria.chainId}
+        )
+      </if>
+    </if>
+
+    ORDER BY t1.${criteria.sortBy}
+    <if test="criteria.sortByType != null and criteria.sortByType != 1">
+      ASC
+    </if>
+    <if test="criteria.sortByType == null or criteria.sortByType == 1">
+      DESC
+    </if>
+    <if
+      test="criteria.page != null and criteria.page != '' and criteria.size != null and criteria.size != ''">
+      OFFSET ((#{criteria.page}-1)*#{criteria.size}) ROWS FETCH
+      NEXT
+      #{criteria.size} ROWS ONLY
+    </if>
+  </select>
+	
+	<select id="findOne" parameterType="Long"
+    resultMap="taskDetailMap">
+    SELECT
+	    task_id as taskId, 
+	    task_id, 
+	    category_id, 
+	    title,
+	    note, 
+	    status, 
+	    priority, 
+	    assignee_id, 
+	    start_date, 
+	    due_date, 
+	    est_time, 
+	    est_point,
+	    actual_time, 
+      director_id, 
+      register_date, 
+      register_person_id, 
+      store_id,
+      parent_task_id,
+      visible,
+      plan_id
+      
+    FROM
+      public.task
+      
+    WHERE
+      task_id = #{taskId};
+  </select>
+  
+  <select id="fetchCommentsQuery"
+    resultType="Comment">
+    SELECT
+      
+      cm.comment_id, 
+      cm.comment_text, 
+      cm.status, 
+      cm.assignee_id, 
+      cm.start_date,
+      cm.due_date, 
+      cm.est_time, 
+      cm.est_point,
+      cm.task_id,
+      ac.display_name
+      
+    FROM
+      public.comment cm 
+    LEFT JOIN public.account ac 
+      ON cm.assignee_id = ac.account_id
+      
+    WHERE
+      cm.task_id=#{taskId}
+
+    ORDER BY
+      cm.start_date desc
+    
+  </select>
+  
+  
+  <update id="update" parameterType="Task">
+    UPDATE
+      public.task
+
+    SET
+    
+	    category_id=#{categoryId}, 
+	    title=#{title}, 
+	    note=#{note}, 
+	    status=#{status}, 
+	    priority=#{priority},
+	    assignee_id=#{assigneeId},
+	    start_date=#{startDate}, 
+	    due_date=#{dueDate},
+	    est_time=#{estTime},
+	    est_point=#{estPoint},
+	    parent_task_id=#{parentTaskId},
+	    visible=#{visible},
+	    plan_id=#{planId}
+    
+    WHERE
+      task_id = #{taskId};
+  </update>
+  
+  
+  <insert id="insert" parameterType="Task">
+    <selectKey keyProperty="taskId" resultType="long"
+      order="BEFORE">
+      SELECT nextval('public."SEQ_TASK"') AS taskId
+    </selectKey>
+
+    INSERT INTO
+    public.task
+    (
+    task_id,
+    category_id,
+    title,
+    note,
+    status,
+    priority,
+    assignee_id,
+    start_date,
+    due_date,
+    est_time,
+    est_point,
+    actual_time,
+    register_date,
+    director_id,
+    register_person_id,
+    store_id,
+    parent_task_id,
+    visible,
+    plan_id
+    )
+    VALUES
+    (
+    #{taskId},
+    #{categoryId},
+    #{title},
+    #{note},
+    #{status},
+    #{priority},
+    #{assigneeId},
+    #{startDate},
+    #{dueDate},
+    #{estTime},
+    #{estPoint},
+    #{actualTime},
+    NOW(),
+    #{directorId},
+    #{registerPersonId},
+    #{storeId},
+    #{parentTaskId},
+    #{visible},
+    #{planId}
+    )
+  </insert>
+  
+  <insert id="insertTaskStore" parameterType="TaskStore">
+    <selectKey keyProperty="taskStoreId" resultType="long"
+      order="BEFORE">
+      SELECT nextval('public."SEQ_TASK_STORE"') AS taskStoreId
+    </selectKey>
+
+    INSERT INTO
+    public.task_store
+    (
+    task_store_id,
+    task_id,
+    store_id
+    )
+    VALUES
+    (
+    #{taskStoreId},
+    #{taskId},
+    #{storeId}
+    )
+  </insert>
+  
+  <select id="fetchAttachsQuery" resultType="TaskAttach">
+    SELECT
+      
+      task_attach_id, 
+      task_id, 
+      attach_name, 
+      attach_url, 
+      created_date,
+      parent_attach_id,
+      file_size as size
+      
+    FROM
+      public.task_attach
+      
+    WHERE
+      task_id=#{taskId}
+
+    ORDER BY
+      task_attach_id desc
+    
+  </select>
+  
+  <select id="getTaskByParentId" parameterType="Long"
+    resultMap="taskDetailMap">
+    SELECT
+      task_id as taskId, 
+      task_id, 
+      category_id, 
+      title,
+      note, 
+      status, 
+      priority, 
+      assignee_id, 
+      start_date, 
+      due_date, 
+      est_time, 
+      est_point,
+      actual_time, 
+      director_id, 
+      register_date, 
+      register_person_id, 
+      store_id,
+      parent_task_id,
+      visible
+      
+    FROM
+      public.task
+    WHERE 
+      parent_task_id = #{parentId}
+    ORDER BY 
+      task_id ASC
+  </select>
+  
+  <delete id="delete" parameterType="Long">
+    DELETE 
+      FROM public.task
+    
+    WHERE 
+      task_id = #{taskId} 
+  </delete>  
+  
+  
+  <select id="countByTaskLog" parameterType="String"
+    resultType="_long">
+    SELECT
+    count(t1.task_id)
+
+    FROM public.task
+    AS t1
+
+    LEFT OUTER JOIN public.account AS a1
+    ON
+    t1.assignee_id = a1.account_id
+
+    LEFT OUTER JOIN public.store AS store1
+    ON t1.store_id = store1.store_id
+
+    LEFT OUTER JOIN public.account AS a2
+    ON t1.director_id = a2.account_id
+
+    LEFT OUTER JOIN public.account AS a3
+    ON t1.register_person_id = a3.account_id
+
+    WHERE t1.parent_task_id is NULL
+    AND t1.task_id IN (
+    
+    
+    SELECT
+    DISTINCT(tl.task_id)
+
+    FROM public.task_log tl
+
+    WHERE 1=1
+
+    <if test="criteria.startDate != null">
+      AND (tl.task_log_date is not NULL AND tl.task_log_date::date >=
+      #{criteria.startDate})
+    </if>
+    <if test="criteria.endDate != null">
+      AND (tl.task_log_date is not NULL AND #{criteria.endDate} >=
+      tl.task_log_date::date)
+    </if>
+    
+    <if test="criteria.accountId != null and criteria.accountId != ''">
+      AND (tl.account_id = #{criteria.accountId})
+    </if>
+    )
+    
+  </select>
+  
+  
+  <select id="searchByTaskLog" parameterType="TaskSearchCriteria"
+    resultMap="taskResultMap">
+   
+    SELECT
+    t1.task_id,
+    t1.task_id as taskId,
+    t1.category_id,
+    t1.title,
+    t1.status,
+    t1.priority,
+    t1.assignee_id,
+    a1.display_name as assigneeName,
+    t1.store_id,
+    store1.name as storeName,
+    t1.register_date,
+    t1.start_date,
+    t1.due_date,
+    t1.est_time,
+    t1.est_point,
+    t1.actual_time,
+    t1.director_id,
+    a2.display_name as directorName,
+    t1.register_person_id,
+    a3.display_name
+    as registerPersonName
+
+    FROM public.task
+    AS t1
+
+    LEFT OUTER JOIN public.account AS a1
+    ON
+    t1.assignee_id = a1.account_id
+
+    LEFT OUTER JOIN public.store AS store1
+    ON t1.store_id = store1.store_id
+
+    LEFT OUTER JOIN public.account AS a2
+    ON t1.director_id = a2.account_id
+
+    LEFT OUTER JOIN public.account AS a3
+    ON t1.register_person_id = a3.account_id
+
+    WHERE t1.task_id IN (
+    SELECT
+    DISTINCT(tl.task_id)
+
+    FROM public.task_log tl
+
+    WHERE 1=1
+
+    <if test="criteria.startDate != null">
+      AND (tl.task_log_date is not NULL AND tl.task_log_date::date >=
+      #{criteria.startDate})
+    </if>
+    <if test="criteria.endDate != null">
+      AND (tl.task_log_date is not NULL AND #{criteria.endDate} >=
+      tl.task_log_date::date)
+    </if>
+    
+    <if test="criteria.accountId != null and criteria.accountId != ''">
+      AND (tl.account_id = #{criteria.accountId})
+    </if>
+    )
+    
+    <if test="criteria.sortBy != null and criteria.sortBy != ''">
+      ORDER BY t1.${criteria.sortBy}
+    </if>
+ 
+    <if test="criteria.sortByType != null and criteria.sortByType != 1">
+        ASC
+      </if>
+    <if test="criteria.sortByType == null or criteria.sortByType == 1">
+      DESC
+    </if>
+    <if
+      test="criteria.page != null and criteria.page != '' and criteria.size != null and criteria.size != ''">
+      OFFSET ((#{criteria.page}-1)*#{criteria.size}) ROWS FETCH
+      NEXT
+      #{criteria.size} ROWS ONLY
+    </if>
+  </select>
+  
+</mapper>

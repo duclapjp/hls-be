@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.cnctor.hls.domain.repository.usertasksummary.UserTaskSummaryRepository">
+	
+	<resultMap id="utsResultMap" type="UserTaskSummary">
+	
+		<id property="accountId" column="account_id" />
+		<id property="taskId" column="task_id" />
+		
+    <result property="createdDate" column="created_date" />
+    <result property="summaryTime" column="summary_time" />
+    <result property="latestAction" column="latest_action" />
+		<result property="latestActionTime" column="latest_action_time" />
+	  <result property="displayName" column="displayName" />
+	</resultMap>
+	
+	<insert id="insert" parameterType="UserTaskSummary">
+
+    INSERT INTO
+      public.user_task_summary
+	    
+	    (
+		    account_id, 
+		    task_id, 
+		    created_date, 
+		    summary_time, 
+		    latest_action, 
+		    latest_action_time
+	    )
+	    
+	  VALUES
+	    (
+		    #{accountId},
+		    #{taskId},
+		    #{createdDate},
+		    #{summaryTime},
+		    #{latestAction},
+		    #{latestActionTime}
+      )
+  </insert>
+  
+  <insert id="upsert" parameterType="UserTaskSummary">
+    
+    INSERT INTO
+      public.user_task_summary
+      
+      (
+        account_id, 
+        task_id, 
+        created_date, 
+        summary_time, 
+        latest_action, 
+        latest_action_time
+      )
+      
+    VALUES
+      (
+        #{accountId},
+        #{taskId},
+        #{createdDate},
+        #{summaryTime},
+        #{latestAction},
+        #{latestActionTime}
+      )
+    
+    ON CONFLICT (account_id, task_id)
+    DO UPDATE SET
+    
+      summary_time=#{summaryTime}, 
+      latest_action=#{latestAction}, 
+      latest_action_time=#{latestActionTime}
+    
+  </insert>
+	
+	<update id="update" parameterType="UserTaskSummary">
+    UPDATE
+      public.user_task_summary
+
+    SET
+	    created_date=#{createdDate}, 
+	    summary_time=#{summaryTime}, 
+	    latest_action=#{latestAction}, 
+	    latest_action_time=#{latestActionTime}
+	    
+    WHERE
+      account_id = #{accountId} AND 
+      task_id = #{taskId}
+  </update>
+	
+	<select id="findOne" resultMap="utsResultMap">
+    SELECT
+	    
+	    account_id, 
+	    task_id, 
+	    created_date, 
+	    summary_time, 
+	    latest_action, 
+	    latest_action_time
+
+    FROM
+      public.user_task_summary
+      
+    WHERE
+      account_id = #{accountId} AND 
+      task_id = #{taskId}
+  </select>
+  
+    <select id="countUserTaskSummary" parameterType="Long"
+    resultType="_long">
+
+    SELECT
+    count(*)
+
+    FROM public.user_task_summary
+
+    WHERE task_id = #{taskId}
+  </select>
+
+  <select id="searchUserTaskSummary" parameterType="UserTaskSummarySearchCriteria"
+    resultMap="utsResultMap">
+
+    SELECT
+		uts.account_id, 
+		uts.task_id, 
+		uts.created_date, 
+		uts.summary_time, 
+		uts.latest_action, 
+		uts.latest_action_time,
+    a1.display_name as displayName
+    
+    FROM public.user_task_summary AS uts
+
+    LEFT OUTER JOIN public.account AS a1
+    ON uts.account_id = a1.account_id
+
+    WHERE uts.task_id = #{taskId}
+
+    <if test="criteria.sortBy != null and criteria.sortBy != ''">
+      ORDER BY c1.${criteria.sortBy}
+      <if
+        test="criteria.sortByType != null and criteria.sortByType != 1">
+        ASC
+      </if>
+      <if test="criteria.sortByType == null or criteria.sortByType == 1">
+        DESC
+      </if>
+    </if>
+    <if
+      test="criteria.page != null and criteria.page != '' and criteria.size != null and criteria.size != ''">
+      OFFSET ((#{criteria.page}-1)*#{criteria.size}) ROWS FETCH
+      NEXT
+      #{criteria.size} ROWS ONLY
+    </if>
+  </select>
+  
+  <delete id="deleteByTaskId" parameterType="Long">
+    DELETE 
+      FROM public.user_task_summary
+    
+    WHERE 
+      task_id = #{taskId} 
+  </delete>  
+  
+  <select id="filter" parameterType="StopwatchSearchCriteria"
+    resultType="java.util.Map">
+    SELECT
+      
+      uts.account_id as account_id, 
+      uts.task_id as task_id, 
+      uts.latest_action_time as start_date,
+      t.title as title,
+      a.display_name as display_name,
+      t.due_date as due_date
+
+    FROM public.user_task_summary AS uts
+
+      LEFT JOIN public.account AS a
+          ON uts.account_id = a.account_id
+      
+      LEFT JOIN public.task AS t
+          ON uts.task_id = t.task_id
+      
+   
+    <include refid="filterStartStopwatchWherePhrase" />
+    
+    <if test="criteria.sortBy != null and criteria.sortBy != ''">
+	    ORDER BY t.${criteria.sortBy}
+	    <if test="criteria.sortByType != null and criteria.sortByType != 1">
+	      ASC
+	    </if>
+	    <if test="criteria.sortByType == null or criteria.sortByType == 1">
+	      DESC
+	    </if>
+    </if>
+    <if
+      test="criteria.page != null and criteria.page != '' and criteria.size != null and criteria.size != ''">
+      OFFSET ((#{criteria.page}-1)*#{criteria.size}) ROWS FETCH
+      NEXT
+      #{criteria.size} ROWS ONLY
+    </if>
+    
+  </select>
+  
+  <select id="countStartStopwatch" parameterType="StopwatchSearchCriteria"
+    resultType="_long">
+
+    SELECT COUNT(*)
+    
+    FROM 
+      public.user_task_summary AS uts
+    
+    <include refid="filterStartStopwatchWherePhrase" />
+  </select>
+  
+  <sql id="filterStartStopwatchWherePhrase">
+    WHERE
+    uts.latest_action = 'START'
+    <if test="criteria.accountId != null and criteria.accountId != ''">
+       AND uts.account_id = #{criteria.accountId}
+    </if>
+  </sql>
+  
+</mapper>

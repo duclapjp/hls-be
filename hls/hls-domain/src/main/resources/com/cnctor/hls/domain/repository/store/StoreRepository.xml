@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.cnctor.hls.domain.repository.store.StoreRepository">
+	<resultMap id="storeResultMap" type="Store">
+		<id property="storeId" column="store_id" />
+		<result property="chainId" column="chain_id" />
+		<result property="directorId" column="director_id" />
+		<result property="managerName" column="manager_name" />
+		<result property="managerPhone" column="manager_phone" />
+		<result property="managerMail" column="manager_mail" />
+		<result property="name" column="name" />
+		<result property="contractStatus" column="contract_status" />
+		<result property="note" column="note" />
+
+		<collection property="otas" select="fetchOtasQuery"
+			column="storeId" ofType="StoreOta" fetchType="lazy"></collection>
+	</resultMap>
+
+	<resultMap id="storeSearchResultMap" type="Store">
+		<id property="storeId" column="store_id" />
+		<result property="chainId" column="chain_id" />
+		<result property="directorId" column="director_id" />
+		<result property="name" column="name" />
+		<result property="contractStatus" column="contract_status" />
+
+		<collection property="otas" select="fetchOtasQuery"
+			column="storeId" ofType="StoreOta" fetchType="lazy"></collection>
+
+	</resultMap>
+
+
+	<select id="fetchOtasQuery" resultType="StoreOta">
+		SELECT
+      so.store_id, 
+      so.ota_id, 
+      so.url, 
+      so.username, 
+      so.password, 
+      so.expired_date, 
+      so.note,
+      so.custom_store_id,
+		  o.ota_type_id,
+		  o.name as ota_type_name,
+		  o.is_display_store_id
+		FROM
+		public.store_ota so
+
+		INNER JOIN ota o ON so.ota_id = o.ota_id
+
+		WHERE
+		so.store_id=#{storeId} AND 
+		o.status = 'ENABLED'
+
+		ORDER BY
+		ota_id
+	</select>
+
+	<resultMap id="directorResultMap" type="Director">
+		<id property="directorId" column="director_id" />
+		<result property="displayName" column="display_name" />
+	</resultMap>
+
+	<select id="countById" parameterType="Long" resultType="_long">
+		SELECT
+		COUNT(*)
+		FROM public.store
+		WHERE
+		store_id = #{storeId}
+	</select>
+
+	<select id="getAllStore" parameterType="String"
+		resultMap="storeResultMap">
+		SELECT
+		store_id as storeId,
+		store_id,
+		chain_id,
+		director_id,
+		manager_name,
+		name
+
+		FROM
+		public.store
+
+		<if test="filterSQL != null and filterSQL != ''">
+			WHERE ${filterSQL}
+		</if>
+
+		ORDER BY store_id
+	</select>
+
+	<select id="findByChainId" parameterType="Long"
+		resultMap="storeResultMap">
+		SELECT
+		store_id,
+		chain_id,
+		director_id,
+		manager_name,
+		name
+
+		FROM
+		public.store
+
+		WHERE
+		chain_id = #{chainId}
+
+		ORDER BY
+		store_id
+	</select>
+
+	<update id="updateChain">
+		UPDATE
+		public.store
+		SET
+		chain_id = #{chainId}
+		WHERE
+		chain_id IS NULL AND
+		store_id IN
+		<foreach item="storeId" collection="storeIds" open="("
+			separator="," close=")">
+			#{storeId}
+		</foreach>
+	</update>
+
+	<update id="removeChain">
+		UPDATE
+		public.store
+		SET
+		chain_id = NULL
+		WHERE
+		store_id IN
+		<foreach item="storeId" collection="delStoreIds" open="("
+			separator="," close=")">
+			#{storeId}
+		</foreach>
+	</update>
+
+	<select id="countBySearchCriteria"
+		parameterType="StoreSearchCriteria" resultType="_long">
+		<if
+			test="criteria.searchKeyword != null and criteria.searchKeyword != ''">
+			<bind name="kw" value="'%' + criteria.searchKeyword + '%'" />
+		</if>
+		SELECT
+		count(DISTINCT(s1.store_id))
+
+		FROM public.store s1
+
+		LEFT JOIN
+		public.account AS a1
+		ON s1.director_id =
+		a1.account_id
+
+		LEFT JOIN
+		public.chain AS c1
+		ON s1.chain_id = c1.chain_id
+		
+		<if test="criteria.searchKeyword != null and criteria.searchKeyword != ''">
+      LEFT OUTER JOIN public.store_ota so ON s1.store_id = so.store_id
+      LEFT OUTER JOIN public.ota o ON o.ota_id = so.ota_id
+    </if>
+
+		WHERE 1=1
+		<if test="criteria.storeId != null and criteria.storeId != ''">
+			AND s1.store_id = #{criteria.storeId}
+		</if>
+		<if
+			test="criteria.contractStatus != null and criteria.contractStatus != ''">
+			AND s1.contract_status = #{criteria.contractStatus}
+		</if>
+		<if test="criteria.chainId != null and criteria.chainId != ''">
+			AND s1.chain_id = #{criteria.chainId}
+		</if>
+		<if
+			test="criteria.directorId != null and criteria.directorId != ''">
+			AND s1.director_id = #{criteria.directorId}
+		</if>
+		<if test="criteria.isChainRole">
+			AND s1.contract_status = '契約中'
+		</if>
+		<if
+			test="criteria.searchKeyword != null and criteria.searchKeyword != ''">
+			AND ( s1.name LIKE #{kw}
+			 OR c1.name LIKE #{kw}
+			 <if test="!criteria.isChainRole">
+        OR o.name like #{kw}
+      </if>
+			)
+		</if>
+	</select>
+
+	<select id="searchCriteria" parameterType="StoreSearchCriteria"
+		resultMap="storeSearchResultMap">
+		<if test="criteria.searchKeyword != null and criteria.searchKeyword != ''">
+			<bind name="kw" value="'%' + criteria.searchKeyword + '%'" />
+		</if>
+		SELECT
+		DISTINCT(s1.store_id),
+		s1.store_id as storeId,
+		s1.chain_id,
+		s1.director_id,
+		s1.contract_status,
+		s1.name,
+		a1.display_name as
+		directorName,
+		c1.name as
+		chainName
+
+		FROM public.store s1
+
+		LEFT JOIN
+		public.account AS a1
+		ON
+		s1.director_id = a1.account_id
+
+		LEFT JOIN
+		public.chain AS c1
+		ON
+		s1.chain_id = c1.chain_id
+		
+		<if test="criteria.searchKeyword != null and criteria.searchKeyword != ''">
+      LEFT OUTER JOIN public.store_ota so ON s1.store_id = so.store_id
+      LEFT OUTER JOIN public.ota o ON o.ota_id = so.ota_id
+    </if>
+
+		WHERE 1=1
+		<if test="criteria.storeId != null and criteria.storeId != ''">
+			AND s1.store_id = #{criteria.storeId}
+		</if>
+		<if
+			test="criteria.contractStatus != null and criteria.contractStatus != ''">
+			AND s1.contract_status = #{criteria.contractStatus}
+		</if>
+		<if test="criteria.chainId != null and criteria.chainId != ''">
+			AND s1.chain_id = #{criteria.chainId}
+		</if>
+		<if
+			test="criteria.directorId != null and criteria.directorId != ''">
+			AND s1.director_id = #{criteria.directorId}
+		</if>
+		<if test="criteria.isChainRole">
+			AND
+			s1.contract_status = '契約中'
+		</if>
+		<if
+			test="criteria.searchKeyword != null and criteria.searchKeyword != ''">
+			AND ( s1.name LIKE #{kw}
+			OR c1.name LIKE #{kw}
+			<if test="!criteria.isChainRole">
+        OR o.name like #{kw}
+      </if>
+			)
+		</if>
+		ORDER BY s1.store_id
+		<if
+			test="criteria.page != null and criteria.page != '' and criteria.size != null and criteria.size != ''">
+			OFFSET ((#{criteria.page}-1)*#{criteria.size}) ROWS FETCH
+			NEXT
+			#{criteria.size} ROWS ONLY
+		</if>
+	</select>
+
+	<select id="getAllDirector" parameterType="String"
+		resultMap="directorResultMap">
+		SELECT
+		DISTINCT(s1.director_id),
+		a1.display_name
+
+		FROM
+		public.store s1
+
+		LEFT JOIN public.account AS a1
+		ON s1.director_id =
+		a1.account_id
+		WHERE
+		s1.director_id is not null and a1.display_name is
+		not null
+		ORDER BY a1.display_name
+	</select>
+
+	<insert id="insert" parameterType="Store">
+
+		<selectKey keyProperty="storeId" resultType="long"
+			order="BEFORE">
+			SELECT nextval('public."SEQ_STORE"') AS storeId
+		</selectKey>
+
+		INSERT INTO
+		public.store
+		(
+		store_id,
+		chain_id,
+		director_id,
+		name,
+		manager_name,
+		manager_phone,
+		manager_mail,
+		contract_status,
+		note
+		)
+		VALUES
+		(
+		#{storeId},
+		#{chainId},
+		#{directorId},
+		#{name},
+		#{managerName},
+		#{managerPhone},
+		#{managerMail},
+		#{contractStatus},
+		#{note}
+		)
+	</insert>
+
+
+	<select id="findOne" parameterType="Long"
+		resultMap="storeResultMap">
+		SELECT
+		store_id as storeId,
+		store_id,
+		chain_id,
+		director_id,
+		manager_name,
+		name,
+		manager_phone,
+		manager_mail,
+		contract_status,
+		note
+
+		FROM
+		public.store
+		WHERE
+		store_id = #{storeId};
+	</select>
+
+	<update id="update" parameterType="Store">
+		UPDATE
+		public.store
+
+		SET
+		director_id=#{directorId},
+		manager_name=#{managerName},
+		name=#{name},
+		manager_phone=#{managerPhone},
+		manager_mail=#{managerMail},
+		contract_status=#{contractStatus},
+		note = #{note},
+		chain_id= #{chainId}
+
+		WHERE
+		store_id = #{storeId};
+	</update>
+
+
+	<update id="updateStoreByChainStatus">
+		UPDATE
+		public.store
+
+		SET
+		contract_status=#{contractStatus}
+
+		WHERE
+		chain_id = #{chainId};
+	</update>
+
+	<select id="storeMapByChainId" parameterType="Long"
+		resultType="java.util.Map">
+		SELECT
+		s.store_id as store_id,
+		s.name as store_name,
+		a.display_name as director_name,
+		s.director_id as director_id,
+		a.phone as director_phone,
+		a.mail as director_mail,
+    s.manager_name as manager_name,
+    s.manager_phone as manager_phone,
+    s.manager_mail as manager_mail
+
+		FROM
+		public.store s
+		LEFT JOIN
+		public.account a
+		ON s.director_id = a.account_id
+
+		WHERE
+		s.chain_id =
+		#{chainId}
+
+		ORDER BY
+		s.director_id
+	</select>
+</mapper>

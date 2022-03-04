@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.cnctor.hls.domain.repository.help.HelpRepository">
+	
+	<resultMap id="helpResultMap" type="Help">
+		<id property="helpId" column="help_id" />
+		<result property="manualUrl" column="manual_url" />
+		<result property="manualName" column="manual_name" />
+		<result property="createdDate" column="created_date" />
+		<result property="fileSize" column="file_size" />
+	</resultMap>
+	
+	<insert id="insert" parameterType="Help">
+
+    <selectKey keyProperty="helpId" resultType="long"
+      order="BEFORE">
+      SELECT nextval('public."SEQ_HELP"') AS helpId
+    </selectKey>
+
+    INSERT INTO
+      public.help
+	    
+	    (
+		    help_id, 
+		    manual_url, 
+		    manual_name, 
+		    created_date, 
+		    file_size
+	    )
+	    
+	  VALUES
+	    (
+		    #{helpId},
+		    #{manualUrl},
+		    #{manualName},
+		    #{createdDate},
+		    #{fileSize}
+      )
+  </insert>
+	
+	<update id="update" parameterType="Help">
+    UPDATE
+      public.help
+
+    SET
+	    manual_url=#{manualUrl}, 
+	    manual_name=#{manualName}, 
+	    created_date=#{createdDate}, 
+	    file_size=#{fileSize}
+	    
+    WHERE
+      help_id = #{helpId}
+  </update>
+	
+	<select id="fetchOne" resultMap="helpResultMap">
+    SELECT
+	    help_id, 
+	    manual_url, 
+	    manual_name, 
+	    created_date, 
+	    file_size
+    FROM
+      public.help
+      
+    LIMIT 1
+  </select>
+</mapper>

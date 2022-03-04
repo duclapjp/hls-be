@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cnctor.hls.domain.repository.usertoken.UserTokenRepository">
+
+  <resultMap id="userTokenResultMap" type="UserToken">
+    <id property="userTokenId" column="user_token_id" />
+    <result property="token" column="token" />
+    <result property="createdDate" column="created_date" />
+    <result property="expiredDate" column="expired_date" />
+    <result property="action" column="action" />
+    <result property="userId" column="user_id" />
+    <result property="isActive" column="is_active" />
+    <result property="actionValue" column="action_value" />
+  </resultMap>
+<insert id="insert" parameterType="UserToken">
+
+  <selectKey keyProperty="userTokenId" resultType="long"
+      order="BEFORE">
+      SELECT nextval('public."SEQ_USERTOKEN"') AS userTokenId
+  </selectKey>
+
+  INSERT INTO public.user_token
+  (
+    user_token_id, 
+    token, 
+    created_date, 
+    expired_date, 
+    action, 
+    user_id,
+    action_value
+  )
+  VALUES 
+  (
+    #{userTokenId}, 
+    #{token}, 
+    #{createdDate}, 
+    #{expiredDate}, 
+    #{action}, 
+    #{userId},
+    #{actionValue}
+  );
+</insert>
+
+
+<select id="findByToken" parameterType="String"
+   resultMap="userTokenResultMap">
+   SELECT 
+     user_token_id, 
+     token, 
+     created_date, 
+     expired_date, 
+     action, 
+     user_id,
+     is_active,
+     action_value
+     
+   FROM public.user_token
+   
+   WHERE
+     token = #{token}
+ </select>
+ 
+ <update id="updateInactive" parameterType="String">
+    UPDATE 
+      public.user_token
+    SET 
+      is_active=false
+    WHERE 
+      token = #{token}
+ </update>
+
+</mapper>

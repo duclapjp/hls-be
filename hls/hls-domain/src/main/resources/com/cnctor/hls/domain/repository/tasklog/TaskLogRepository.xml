@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.cnctor.hls.domain.repository.tasklog.TaskLogRepository">
+
+	<resultMap id="taskLogResultMap" type="TaskLog">
+
+		<id property="taskLogId" column="task_log_id" />
+		<result property="taskLogDate" column="task_log_date" />
+		<result property="accountId" column="account_id" />
+		<result property="action" column="action" />
+		<result property="executeTime" column="execute_time" />
+		<result property="accumulationTime" column="accumulation_time" />
+		<result property="taskId" column="task_id" />
+		<result property="displayName" column="displayName" />
+		<result property="confirmTime" column="confirm_time" />
+		<result property="type" column="type" />
+
+	</resultMap>
+
+	<resultMap id="adminTaskLogResultMap" type="AdminTaskLog">
+
+		<result property="accountId" column="account_id" />
+		<result property="displayName" column="displayName" />
+		<result property="totalExecuteTime" column="totalExecuteTime" />
+		<result property="number" column="number" />
+
+	</resultMap>
+
+	<insert id="insert" parameterType="TaskLog">
+
+		<selectKey keyProperty="taskLogId" resultType="long"
+			order="BEFORE">
+			SELECT nextval('public."SEQ_TASK_LOG"') AS taskLogId
+		</selectKey>
+
+		INSERT INTO
+		public.task_log
+
+		(
+		task_log_id,
+		task_log_date,
+		account_id,
+		action,
+		execute_time,
+		accumulation_time,
+		task_id,
+		confirm_time,
+		type
+
+		)
+
+		VALUES
+		(
+		#{taskLogId},
+		#{taskLogDate},
+		#{accountId},
+		#{action},
+		#{executeTime},
+		#{accumulationTime},
+		#{taskId},
+		#{confirmTime},
+		#{type}
+		)
+	</insert>
+
+	<update id="update" parameterType="TaskLog">
+		UPDATE
+		public.task_log
+
+		SET
+		task_log_date=#{taskLogDate},
+		account_id=#{accountId},
+		action=#{action},
+		execute_time=#{executeTime},
+		accumulation_time=#{accumulationTime},
+		task_id=#{taskId},
+		confirm_time =
+		#{confirmTime},
+		type = #{type}
+		WHERE
+		task_attach_id = #{taskAttachId}
+	</update>
+
+	<select id="findOne" parameterType="Long"
+		resultMap="taskLogResultMap">
+		SELECT
+
+		task_log_id,
+		task_log_date,
+		account_id,
+		action,
+		execute_time,
+		accumulation_time,
+		task_id,
+		confirm_time,
+		type
+
+		FROM
+		public.task_log
+
+		WHERE
+		task_log_id = #{taskLogId};
+	</select>
+
+	<select id="countTaskLog" parameterType="Long"
+		resultType="_long">
+
+		SELECT
+		count(*)
+
+		FROM public.task_log
+
+		WHERE task_id = #{taskId}
+	</select>
+
+	<select id="searchTaskLog" parameterType="TaskLogSearchCriteria"
+		resultMap="taskLogResultMap">
+
+		SELECT
+		tl.task_log_id,
+		tl.task_id,
+		tl.account_id,
+		a1.display_name as
+		displayName,
+		tl.action,
+		tl.execute_time,
+		tl.accumulation_time,
+		tl.task_log_date,
+		tl.confirm_time,
+		tl.type
+
+		FROM public.task_log AS tl
+
+		LEFT OUTER JOIN public.account AS a1
+		ON tl.account_id = a1.account_id
+
+		WHERE tl.task_id = #{taskId}
+
+		<if test="criteria.sortBy != null and criteria.sortBy != ''">
+			ORDER BY tl.${criteria.sortBy}
+			<if
+				test="criteria.sortByType != null and criteria.sortByType != 1">
+				ASC
+			</if>
+			<if test="criteria.sortByType == null or criteria.sortByType == 1">
+				DESC
+			</if>
+		</if>
+
+
+		<if
+			test="criteria.page != null and criteria.page != '' and criteria.size != null and criteria.size != ''">
+			OFFSET ((#{criteria.page}-1)*#{criteria.size}) ROWS FETCH
+			NEXT
+			#{criteria.size} ROWS ONLY
+		</if>
+	</select>
+
+	<update id="batchUpdate">
+		<foreach collection="taskLogs" item="taskLog" separator=";">
+			UPDATE
+			public.task_log
+
+			SET
+			task_log_date=#{taskLog.taskLogDate},
+			account_id=#{taskLog.accountId},
+			action=#{taskLog.action},
+			execute_time=#{taskLog.executeTime},
+			accumulation_time=#{taskLog.accumulationTime},
+			task_id=#{taskLog.taskId},
+			confirm_time=#{taskLog.confirmTime},
+			type =
+			#{taskLog.type}
+
+			WHERE
+			task_log_id = #{taskLog.taskLogId}
+		</foreach>
+	</update>
+
+	<select id="fetchTaskLogAfter" parameterType="TaskLog"
+		resultMap="taskLogResultMap">
+
+		SELECT
+
+		task_log_id,
+		task_log_date,
+		account_id,
+		action,
+		execute_time,
+		accumulation_time,
+		task_id,
+		confirm_time,
+		type
+
+		FROM
+		public.task_log
+
+		WHERE
+		task_id = #{taskId} AND
+		action = 'STOP' AND
+		task_log_id > #{taskLogId}
+
+		ORDER BY
+		task_log_id ASC
+	</select>
+
+
+	<select id="getLatestByAccount" resultMap="taskLogResultMap">
+
+		SELECT
+
+		task_log_id,
+		task_log_date,
+		account_id,
+		action,
+		execute_time,
+		accumulation_time,
+		task_id,
+		confirm_time,
+		type
+
+		FROM
+		public.task_log
+
+		WHERE
+		task_id = #{taskId}
+		AND
+		account_id = #{accountId}
+
+		ORDER BY
+		task_log_id desc
+
+		LIMIT 1
+
+	</select>
+
+	<select id="getBeforeByAccount" parameterType="TaskLog"
+		resultMap="taskLogResultMap">
+
+		SELECT
+
+		task_log_id,
+		task_log_date,
+		account_id,
+		action,
+		execute_time,
+		accumulation_time,
+		task_id,
+		confirm_time,
+		type
+
+		FROM
+		public.task_log
+
+		WHERE
+		task_id = #{taskId} AND
+		account_id = #{accountId}
+		AND
+		task_log_id &lt; #{taskLogId}
+		ORDER BY
+		task_log_id desc
+
+	</select>
+
+	<delete id="deleteByTaskId" parameterType="Long">
+		DELETE
+		FROM
+		public.task_log
+
+		WHERE
+		task_id = #{taskId}
+	</delete>
+
+	<select id="sumTaskLogTime" resultType="java.util.Map">
+		SELECT
+		SUM(execute_time) as sum_execute_time, SUM(confirm_time) as
+		sum_confirm_time
+		FROM
+		public.task_log
+		WHERE
+		task_id IN
+
+		<foreach item="taskId" collection="taskIds" open="("
+			separator="," close=")">
+			#{taskId}
+		</foreach>
+
+	</select>
+
+	<update id="updateStopTaskLog" parameterType="TaskLog">
+		UPDATE
+		public.task_log
+
+		SET
+		stopped=true
+
+		WHERE
+		task_log_id = #{taskLogId}
+		AND
+		action = 'START'
+	</update>
+
+
+	<select id="getAdminTaskLogReport"
+		parameterType="AdminTaskLogSearchCriteria"
+		resultMap="adminTaskLogResultMap">
+		<if test="criteria.username != null and criteria.username != ''">
+      <bind name="usernameSearch" value="'%' + criteria.username + '%'" />
+    </if>
+
+		SELECT
+		tl.account_id,
+		SUM (
+		CASE
+		WHEN action = 'START' THEN
+		1
+		ELSE
+		0
+		END
+		) as
+		number,
+		SUM (
+		CASE
+		WHEN action = 'STOP' THEN
+		execute_time
+		WHEN (action = 'START' and tl.stopped = false) THEN
+		CAST(EXTRACT(EPOCH FROM (NOW() - tl.task_log_date)) as INTEGER)*1000
+		ELSE
+		0
+		END
+		) AS totalExecuteTime,
+		a1.display_name as displayName
+
+		FROM public.task_log tl
+
+		LEFT OUTER JOIN public.account AS a1
+		ON tl.account_id = a1.account_id
+
+		WHERE 1=1
+
+		<if test="criteria.startDate != null">
+			AND (tl.task_log_date is not NULL AND tl.task_log_date::date >=
+			#{criteria.startDate})
+		</if>
+		<if test="criteria.endDate != null">
+			AND (tl.task_log_date is not NULL AND #{criteria.endDate} >=
+			tl.task_log_date::date)
+		</if>
+		
+		<if test="criteria.username != null and criteria.username != ''">
+      AND (a1.display_name like #{usernameSearch})
+    </if>
+
+		GROUP BY tl.account_id, a1.display_name
+
+		<if test="criteria.sortBy != null and criteria.sortBy != ''">
+			ORDER BY a1.${criteria.sortBy}
+		</if>
+		<if test="criteria.sortBy == null or criteria.sortBy == ''">
+      ORDER BY number
+    </if>
+		<if test="criteria.sortByType != null and criteria.sortByType != 1">
+        ASC
+      </if>
+      <if test="criteria.sortByType == null or criteria.sortByType == 1">
+        DESC
+      </if>
+	</select>
+	
+	
+	<select id="findTaskNotStopYet" resultMap="taskLogResultMap">
+    SELECT
+
+	    task_log_id,
+	    task_log_date,
+	    account_id,
+	    action,
+	    execute_time,
+	    accumulation_time,
+	    task_id,
+	    confirm_time,
+	    type
+
+    FROM
+      public.task_log
+
+    WHERE 
+      action = 'START' AND
+      stopped = false
+  </select>
+</mapper>

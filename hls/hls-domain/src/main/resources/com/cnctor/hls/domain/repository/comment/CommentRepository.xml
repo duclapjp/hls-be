@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+    "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+	namespace="com.cnctor.hls.domain.repository.comment.CommentRepository">
+	<resultMap id="commentResultMap" type="Comment">
+		
+		<id property="commentId" column="comment_id" />
+
+		<result property="status" column="status" />
+		<result property="assigneeId" column="assignee_id" />
+		<result property="startDate" column="start_date" />
+		<result property="dueDate" column="due_date" />
+		<result property="commentText" column="comment_text" />
+		<result property="estTime" column="est_time" />
+		<result property="estPoint" column="est_point" />
+		<result property="taskId" column="task_id" />
+		<result property="creatorId" column="creator_id" />
+		<result property="creatorName" column="creatorName" />
+		<result property="type" column="type" />
+		<result property="createdDate" column="created_date" />
+		<result property="notifyTo" column="notify_to" />
+		
+	</resultMap>
+	
+	<select id="findOne" parameterType="Long"
+    resultMap="commentResultMap">
+    SELECT
+	    *
+    FROM
+      public.comment
+      
+    WHERE
+      comment_id = #{commentId};
+  </select>
+  
+  <insert id="insert" parameterType="Store">
+
+    <selectKey keyProperty="commentId" resultType="long"
+      order="BEFORE">
+      SELECT nextval('public."SEQ_COMMENT"') AS commentId
+    </selectKey>
+
+    INSERT INTO
+      public.comment
+		    (
+		    comment_id, 
+		    comment_text, 
+		    status, 
+		    assignee_id, 
+		    est_time, 
+		    est_point, 
+		    task_id, 
+		    due_date, 
+		    start_date,
+		    creator_id,
+		    type,
+		    created_date,
+		    notify_to
+		    )
+		    
+    VALUES
+    
+	    (
+	    #{commentId},
+	    #{commentText},
+	    #{status},
+	    #{assigneeId},
+	    #{estTime},
+	    #{estPoint},
+	    #{taskId},
+	    #{dueDate},
+	    #{startDate},
+	    #{creatorId},
+	    #{type},
+	    #{createdDate},
+	    #{notifyTo}
+	    )
+  </insert>
+  
+  <select id="countComment" parameterType="CommentSearchCriteria"
+    resultType="_long">
+
+    SELECT
+    count(*)
+
+    FROM public.comment
+
+    WHERE task_id = #{taskId}
+    <if test="criteria.type != null and criteria.type != ''">
+        AND type = #{criteria.type}
+    </if>
+  </select>
+
+  <select id="searchComment" parameterType="CommentSearchCriteria"
+    resultMap="commentResultMap">
+
+    SELECT
+    c1.comment_id,
+    c1.comment_text,
+    c1.status,
+    c1.est_time,
+    c1.est_point,
+    c1.task_id,
+    c1.due_date, 
+    c1.start_date,
+    c1.assignee_id,
+    c1.creator_id,
+    c1.type,
+    c1.created_date,
+    c1.notify_to,
+    
+    a1.display_name as creatorName
+    
+    FROM public.comment AS c1
+
+    LEFT OUTER JOIN public.account AS a1
+    ON c1.creator_id = a1.account_id
+
+    WHERE c1.task_id = #{taskId}
+    <if test="criteria.type != null and criteria.type != ''">
+        AND c1.type = #{criteria.type}
+    </if>
+    <if test="criteria.sortBy != null and criteria.sortBy != ''">
+      ORDER BY c1.${criteria.sortBy}
+      <if
+        test="criteria.sortByType != null and criteria.sortByType != 1">
+        ASC
+      </if>
+      <if test="criteria.sortByType == null or criteria.sortByType == 1">
+        DESC
+      </if>
+    </if>
+    <if
+      test="criteria.page != null and criteria.page != '' and criteria.size != null and criteria.size != ''">
+      OFFSET ((#{criteria.page}-1)*#{criteria.size}) ROWS FETCH
+      NEXT
+      #{criteria.size} ROWS ONLY
+    </if>
+  </select>
+  
+  <delete id="deleteByTaskId" parameterType="Long">
+    DELETE 
+      FROM public.comment
+    
+    WHERE 
+      task_id = #{taskId} 
+  </delete>
+</mapper>
